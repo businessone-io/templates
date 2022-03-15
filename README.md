@@ -1,1 +1,1 @@
-# templates
+# Business One Cloud Templates
