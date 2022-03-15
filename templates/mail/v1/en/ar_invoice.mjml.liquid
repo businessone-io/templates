@@ -1,15 +1,17 @@
 {% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_INV_E" | first %}
 {% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_INV_E" | first %}
 
+{% assign contactDocument = BusinessPartner.ContactEmployees | where: "InternalCode", Document.ContactPersonCode | first %}
+
 <mjml>
     <mj-head>
         <mj-attributes>
             <mj-all font-family="Calibri, sans" />
         </mj-attributes>
         <mj-preview>
-            Ihre {{ Company.CompanyName }} Rechnung {{ Document.DocNum }}
+            Your {{ Company.CompanyName }} invoice {{ Document.DocNum }}
         </mj-preview>
-        <mj-title> Ihre {{ Company.CompanyName }} Rechnung {{ Document.DocNum }}</mj-title>
+        <mj-title> Your {{ Company.CompanyName }} invoice {{ Document.DocNum }}</mj-title>
     </mj-head>
     <mj-body>
         <mj-section padding-top="50px" padding-bottom="50px">
@@ -27,8 +29,8 @@
         <mj-section background-color="#e7e6e6" padding-top="10px" padding-bottom="10px">
             <mj-column>
                 <mj-text>
-                    {% if BusinessPartner.ContactPerson %}
-                    Dear {{ BusinessPartner.ContactPerson }},
+                    {% if contactDocument.Name %}
+                    Dear {{ if contactDocument.Name }},
                     {% else %}
                     Dear Sir or Madam,
                     {% endif %}

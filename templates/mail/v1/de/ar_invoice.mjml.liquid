@@ -1,6 +1,8 @@
 {% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_INV_D" | first %}
 {% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_INV_D" | first %}
 
+{% assign contactDocument = BusinessPartner.ContactEmployees | where: "InternalCode", Document.ContactPersonCode | first %}
+
 <mjml>
     <mj-head>
         <mj-attributes>
@@ -27,8 +29,8 @@
         <mj-section background-color="#e7e6e6" padding-top="10px" padding-bottom="10px">
             <mj-column>
                 <mj-text>
-                    {% if BusinessPartner.ContactPerson %}
-                    Sehr geehrte(r) {{ BusinessPartner.ContactPerson }},
+                    {% if contactDocument.Name %}
+                    Sehr geehrte(r) {{ contactDocument.Name }},
                     {% else %}
                     Sehr geehrte Damen und Herren,
                     {% endif %}
