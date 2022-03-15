@@ -1,5 +1,5 @@
-{% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_INV_D" | first %}
-{% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_INV_D" | first %}
+{% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_INV_E" | first %}
+{% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_INV_E" | first %}
 
 <mjml>
     <mj-head>
@@ -19,7 +19,7 @@
         </mj-section>
         <mj-section background-color="#e7e6e6" padding-top="10px" padding-bottom="10px">
             <mj-column>
-                <mj-text padding-bottom="0px" font-weight="400" font-size="20px" align="center">RECHNUNG</mj-text>
+                <mj-text padding-bottom="0px" font-weight="400" font-size="20px" align="center">INVOICE</mj-text>
                 <mj-text padding-top="0px" font-weight="400" font-size="20px" align="center">{{ Document.DocNum }}</mj-text>
                 <mj-divider border-width="6px" border-style="solid" border-color="#a6a6a6" />
             </mj-column>
@@ -28,16 +28,16 @@
             <mj-column>
                 <mj-text>
                     {% if BusinessPartner.ContactPerson %}
-                    Sehr geehrte(r) {{ BusinessPartner.ContactPerson }},
+                    Dear {{ BusinessPartner.ContactPerson }},
                     {% else %}
-                    Sehr geehrte Damen und Herren,
+                    Dear Sir or Madam,
                     {% endif %}
                 </mj-text>
                 <mj-text line-height="1.7em">
                     {% if remarkOp %}
                     {{ remarkOp.Text | replace: "\r", "\n" | newline_to_br }}
                     {% else %}
-                    Im Anhang dieser E-Mail finden Sie Ihre elektronische Rechnung.
+                    attached to this e-mail you will find your electronic invoice.
                     {% endif %}
                 </mj-text>
             </mj-column>
@@ -46,19 +46,19 @@
             <mj-group>
                 <mj-column width="33.333333%">
                     <mj-text font-weight="600" font-size="14px" align="center">
-                        Rechnungsnummer<br>
+                        Invoice number<br>
                         {{ Document.DocNum }}
                     </mj-text>
                 </mj-column>
                 <mj-column>
                     <mj-text font-weight="600" font-size="14px" align="center">
-                        Betrag<br>
+                        Amount<br>
                         {{ Document.DocTotal }} {{ Document.DocCurrency }}
                     </mj-text>
                 </mj-column>
                 <mj-column>
                     <mj-text font-weight="600" font-size="14px" align="center">
-                        Referenz<br>
+                        Reference<br>
                         {{ Document.NumAtCard | default: '-' }}
                     </mj-text>
                 </mj-column>
@@ -70,12 +70,12 @@
                     {%if remarkCl %}
                     {{ remarkCl.Text | replace: "\r", "\n" | newline_to_br }}
                     {%else%}
-                    Bitte beachten Sie, das angehängte PDF Dokument ist die Originalrechnung.
+                    Please note, the attached PDF document is the original invoice.
                     {%endif%}
-                </mj-text>
+                </mj-text>  
                 <mj-text padding-top="20px">
-                    Mit freundlichen Grüßen<br>
-                    Ihr {{ Company.CompanyName }} Team
+                    With kind regards<br>
+                    Your {{ Company.CompanyName }} Team
                 </mj-text>
                 <mj-divider border-width="6px" border-style="solid" border-color="#a6a6a6" padding-top="30px"/>
 
