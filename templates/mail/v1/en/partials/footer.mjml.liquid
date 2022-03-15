@@ -1,0 +1,42 @@
+{% assign internet = PredefinedTexts | where: "TextCode", "B1IO_InternetAddress" | first %}
+{% assign internetUrl = PredefinedTexts | where: "TextCode", "B1IO_InternetAdr_URL" | first %}
+{% assign companyAddress = PredefinedTexts | where: "TextCode", "B1IO_CompanyAddressE" | first %}
+{% assign companyRegOffice = PredefinedTexts | where: "TextCode", "B1IO_RegistOffice" | first %}
+{% assign companyRegister = PredefinedTexts | where: "TextCode", "B1IO_CompanyRegister" | first %}
+
+<mj-text color="#818181">
+    {{ Company.CompanyName }}<br>
+    {{ companyAddress.Text | default: Company.Address | replace: "\r", "\n" | newline_to_br }}
+</mj-text>
+<mj-text color="#818181">
+    {% if Company.PhoneNumber1 %}
+    T: {{ Company.PhoneNumber1 }}<br>
+    {% endif %}
+    {% if Company.PhoneNumber2 %}
+    M: {{ Company.PhoneNumber2 }}<br>
+    {% endif %}
+    {% if Company.FaxNumber %}
+    F: {{ Company.FaxNumber }}<br>
+    {% endif %}
+</mj-text>
+<mj-text color="#818181">
+    E-Mail: <a href="mailto:{{ Company.eMail }}">{{ Company.eMail }}</a><br>
+</mj-text>
+
+{%if internetUrl %}
+<mj-text color="#818181">
+    Internet: <a href="{{internetUrl.Text}}">{{ internet.Text | default: internetUrl.Text }}</a><br>
+</mj-text>
+{% endif %}
+<mj-text color="#818181">
+    {% if companyRegOffice %}
+    {{ Company.CompanyName }}, Sitz: {{ companyRegOffice.Text }}<br>
+    {% endif %}
+    {% if companyRegister %}
+    Companies Register: {{ companyRegister.Text }}<br>
+    {% endif %}
+    Managing Director: {{ Company.GeneralManager }}
+</mj-text>
+<mj-text padding-top="50px">
+    This email was created with Business One Cloud. <a href="https://www.business-one.cloud/de/signup">Business One Cloud</a>.
+</mj-text>
