@@ -1,0 +1,89 @@
+{% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_RIN_D" | first %}
+{% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_RIN_D" | first %}
+
+{% assign contactDocument = BusinessPartner.ContactEmployees | where: "InternalCode", Document.ContactPersonCode | first %}
+
+<mjml>
+    <mj-head>
+        <mj-attributes>
+            <mj-all font-family="Calibri, sans" />
+        </mj-attributes>
+        <mj-preview>
+            Ihre {{ Company.CompanyName }} Gutschrift {{ Document.DocNum }}
+        </mj-preview>
+        <mj-title> Ihre {{ Company.CompanyName }} Gutschrift {{ Document.DocNum }}</mj-title>
+    </mj-head>
+    <mj-body>
+        <mj-section padding-top="50px" padding-bottom="50px">
+            <mj-column>
+                <mj-image width="200px" src="{{ '/tenant/templates/mail/assets/logo.png' | cdn: './../assets/logo.png' }}"/>
+            </mj-column>
+        </mj-section>
+        <mj-section background-color="#e7e6e6" padding-top="10px" padding-bottom="10px">
+            <mj-column>
+                <mj-text padding-bottom="0px" font-weight="400" font-size="20px" align="center">GUTSCHRIFT</mj-text>
+                <mj-text padding-top="0px" font-weight="400" font-size="20px" align="center">{{ Document.DocNum }}</mj-text>
+                <mj-divider border-width="6px" border-style="solid" border-color="#a6a6a6" />
+            </mj-column>
+        </mj-section>
+        <mj-section background-color="#e7e6e6" padding-top="10px" padding-bottom="10px">
+            <mj-column>
+                <mj-text>
+                    {% if contactDocument.Name %}
+                    Sehr geehrte(r) {{ contactDocument.Name }},
+                    {% else %}
+                    Sehr geehrte Damen und Herren,
+                    {% endif %}
+                </mj-text>
+                <mj-text line-height="1.7em">
+                    {% if remarkOp %}
+                    {{ remarkOp.Text | replace: "\r", "\n" | newline_to_br }}
+                    {% else %}
+                    im Anhang dieser E-Mail finden Sie Ihre elektronische Gutschrift.
+                    {% endif %}
+                </mj-text>
+            </mj-column>
+        </mj-section>
+        <mj-section background-color="#cfcece" padding-top="10px" padding-bottom="10px" >
+            <mj-group>
+                <mj-column width="33.333333%">
+                    <mj-text font-weight="600" font-size="14px" align="center">
+                        Belegnummer<br>
+                        {{ Document.DocNum }}
+                    </mj-text>
+                </mj-column>
+                <mj-column>
+                    <mj-text font-weight="600" font-size="14px" align="center">
+                        Betrag<br>
+                        {{ Document.DocTotal }} {{ Document.DocCurrency }}
+                    </mj-text>
+                </mj-column>
+                <mj-column>
+                    <mj-text font-weight="600" font-size="14px" align="center">
+                        Referenz<br>
+                        {{ Document.NumAtCard | default: '-' }}
+                    </mj-text>
+                </mj-column>
+            </mj-group>
+        </mj-section>
+        <mj-section background-color="#e7e6e6" padding-top="10px" padding-bottom="10px">
+            <mj-column>
+                <mj-text>
+                    {%if remarkCl %}
+                    {{ remarkCl.Text | replace: "\r", "\n" | newline_to_br }}
+                    {%else%}
+                    Bitte beachten Sie, das angehängte PDF Dokument ist der Originalbeleg.
+                    {%endif%}
+                </mj-text>
+                <mj-text padding-top="20px">
+                    Mit freundlichen Grüßen<br>
+                    Ihr {{ Company.CompanyName }} Team
+                </mj-text>
+                <mj-divider border-width="6px" border-style="solid" border-color="#a6a6a6" padding-top="30px"/>
+
+                {% render "./partials/footer.mjml.liquid" %}
+
+            </mj-column>
+        </mj-section>
+    </mj-body>
+</mjml>
