@@ -1,5 +1,6 @@
 {% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_RIN_D" | first %}
 {% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_RIN_D" | first %}
+{% assign formattedDocNum = DocumentSeries.Prefix | append: Document.DocNum | append: DocumentSeries.Suffix %}
 
 {% assign contactDocument = BusinessPartner.ContactEmployees | where: "InternalCode", Document.ContactPersonCode | first %}
 
@@ -9,9 +10,9 @@
             <mj-all font-family="Calibri, sans" />
         </mj-attributes>
         <mj-preview>
-            Ihre {{ Company.CompanyName }} Gutschrift {{ Document.DocNum }}
+            Ihre {{ Company.CompanyName }} Gutschrift {{ formattedDocNum }}
         </mj-preview>
-        <mj-title> Ihre {{ Company.CompanyName }} Gutschrift {{ Document.DocNum }}</mj-title>
+        <mj-title> Ihre {{ Company.CompanyName }} Gutschrift {{ formattedDocNum }}</mj-title>
     </mj-head>
     <mj-body>
         <mj-section padding-top="50px" padding-bottom="50px">
@@ -22,7 +23,7 @@
         <mj-section background-color="#e7e6e6" padding-top="10px" padding-bottom="10px">
             <mj-column>
                 <mj-text padding-bottom="0px" font-weight="400" font-size="20px" align="center">GUTSCHRIFT</mj-text>
-                <mj-text padding-top="0px" font-weight="400" font-size="20px" align="center">{{ Document.DocNum }}</mj-text>
+                <mj-text padding-top="0px" font-weight="400" font-size="20px" align="center">{{ formattedDocNum }}</mj-text>
                 <mj-divider border-width="6px" border-style="solid" border-color="#a6a6a6" />
             </mj-column>
         </mj-section>
@@ -49,7 +50,7 @@
                 <mj-column width="33.333333%">
                     <mj-text font-weight="600" font-size="14px" align="center">
                         Belegnummer<br>
-                        {{ Document.DocNum }}
+                        {{ formattedDocNum }}
                     </mj-text>
                 </mj-column>
                 <mj-column>

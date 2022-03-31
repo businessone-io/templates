@@ -1,5 +1,6 @@
-{% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_QUT_D" | first %}
-{% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_QUT_D" | first %}
+{% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_QUT_E" | first %}
+{% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_QUT_E" | first %}
+{% assign formattedDocNum = DocumentSeries.Prefix | append: Document.DocNum | append: DocumentSeries.Suffix %}
 
 {% assign contactDocument = BusinessPartner.ContactEmployees | where: "InternalCode", Document.ContactPersonCode | first %}
 
@@ -9,9 +10,9 @@
             <mj-all font-family="Calibri, sans" />
         </mj-attributes>
         <mj-preview>
-            Ihr {{ Company.CompanyName }} Angebot {{ Document.DocNum }}
+            Your {{ Company.CompanyName }} quotation {{ formattedDocNum }}
         </mj-preview>
-        <mj-title> Ihr {{ Company.CompanyName }} Angebot {{ Document.DocNum }}</mj-title>
+        <mj-title> Your {{ Company.CompanyName }} quotation {{ formattedDocNum }}</mj-title>
     </mj-head>
     <mj-body>
         <mj-section padding-top="50px" padding-bottom="50px">
@@ -21,8 +22,8 @@
         </mj-section>
         <mj-section background-color="#e7e6e6" padding-top="10px" padding-bottom="10px">
             <mj-column>
-                <mj-text padding-bottom="0px" font-weight="400" font-size="20px" align="center">ANGEBOT</mj-text>
-                <mj-text padding-top="0px" font-weight="400" font-size="20px" align="center">{{ Document.DocNum }}</mj-text>
+                <mj-text padding-bottom="0px" font-weight="400" font-size="20px" align="center">QUOTATION</mj-text>
+                <mj-text padding-top="0px" font-weight="400" font-size="20px" align="center">{{ formattedDocNum }}</mj-text>
                 <mj-divider border-width="6px" border-style="solid" border-color="#a6a6a6" />
             </mj-column>
         </mj-section>
@@ -30,16 +31,16 @@
             <mj-column>
                 <mj-text>
                     {% if contactDocument.Name %}
-                    Sehr geehrte(r) {{ contactDocument.Name }},
+                    Dear {{ contactDocument.Name }},
                     {% else %}
-                    Sehr geehrte Damen und Herren,
+                    Dear Sir or Madam,
                     {% endif %}
                 </mj-text>
                 <mj-text line-height="1.7em">
                     {% if remarkOp %}
                     {{ remarkOp.Text | replace: "\r", "\n" | newline_to_br }}
                     {% else %}
-                    im Anhang dieser E-Mail finden Sie Ihr Angebot.
+                    attached to this e-mail you will find your electronic quotation.
                     {% endif %}
                 </mj-text>
             </mj-column>
@@ -48,19 +49,19 @@
             <mj-group>
                 <mj-column width="33.333333%">
                     <mj-text font-weight="600" font-size="14px" align="center">
-                        Angebot<br>
-                        {{ Document.DocNum }}
+                        Quotation<br>
+                        {{ formattedDocNum }}
                     </mj-text>
                 </mj-column>
                  <mj-column>
                     <mj-text font-weight="600" font-size="14px" align="center">
-                        Betrag<br>
+                        Amount<br>
                         {{ Document.DocTotal }} {{ Document.DocCurrency }}
                     </mj-text>
                 </mj-column>
                 <mj-column>
                     <mj-text font-weight="600" font-size="14px" align="center">
-                        Referenz<br>
+                        Reference<br>
                         {{ Document.NumAtCard | default: '-' }}
                     </mj-text>
                 </mj-column>
@@ -72,11 +73,12 @@
                     {%if remarkCl %}
                     {{ remarkCl.Text | replace: "\r", "\n" | newline_to_br }}
                     {%else%}
+                    Please note, the attached PDF document is the original invoice.
                     {%endif%}
-                </mj-text>
+                </mj-text>  
                 <mj-text padding-top="20px">
-                    Mit freundlichen Grüßen<br>
-                    Ihr {{ Company.CompanyName }} Team
+                    With kind regards<br>
+                    Your {{ Company.CompanyName }} Team
                 </mj-text>
                 <mj-divider border-width="6px" border-style="solid" border-color="#a6a6a6" padding-top="30px"/>
 

@@ -1,5 +1,5 @@
-{% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_RIN_E" | first %}
-{% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_RIN_E" | first %}
+{% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_DPI_D" | first %}
+{% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_DPI_D" | first %}
 {% assign formattedDocNum = DocumentSeries.Prefix | append: Document.DocNum | append: DocumentSeries.Suffix %}
 
 {% assign contactDocument = BusinessPartner.ContactEmployees | where: "InternalCode", Document.ContactPersonCode | first %}
@@ -10,9 +10,9 @@
             <mj-all font-family="Calibri, sans" />
         </mj-attributes>
         <mj-preview>
-            Your {{ Company.CompanyName }} credit note {{ formattedDocNum }}
+            Ihr {{ Company.CompanyName }} Anzahlungsrechnung {{ formattedDocNum }}
         </mj-preview>
-        <mj-title> Your {{ Company.CompanyName }} credit note {{ formattedDocNum }}</mj-title>
+        <mj-title> Ihr {{ Company.CompanyName }} Anzahlungsrechnung {{ formattedDocNum }}</mj-title>
     </mj-head>
     <mj-body>
         <mj-section padding-top="50px" padding-bottom="50px">
@@ -22,25 +22,25 @@
         </mj-section>
         <mj-section background-color="#e7e6e6" padding-top="10px" padding-bottom="10px">
             <mj-column>
-                <mj-text padding-bottom="0px" font-weight="400" font-size="20px" align="center">CREDITNOTE</mj-text>
+                <mj-text padding-bottom="0px" font-weight="400" font-size="20px" align="center">ANZAHLUNGSRECHNUNG</mj-text>
                 <mj-text padding-top="0px" font-weight="400" font-size="20px" align="center">{{ formattedDocNum }}</mj-text>
                 <mj-divider border-width="6px" border-style="solid" border-color="#a6a6a6" />
             </mj-column>
         </mj-section>
         <mj-section background-color="#e7e6e6" padding-top="10px" padding-bottom="10px">
-             <mj-column>
+            <mj-column>
                 <mj-text>
                     {% if contactDocument.Name %}
-                    Dear {{ contactDocument.Name }},
+                    Sehr geehrte(r) {{ contactDocument.Name }},
                     {% else %}
-                    Dear Sir or Madam,
+                    Sehr geehrte Damen und Herren,
                     {% endif %}
                 </mj-text>
                 <mj-text line-height="1.7em">
                     {% if remarkOp %}
                     {{ remarkOp.Text | replace: "\r", "\n" | newline_to_br }}
                     {% else %}
-                    attached to this e-mail you will find your electronic credit note.
+                    im Anhang dieser E-Mail finden Sie Ihre Anzahlungsrechnung.
                     {% endif %}
                 </mj-text>
             </mj-column>
@@ -49,19 +49,19 @@
             <mj-group>
                 <mj-column width="33.333333%">
                     <mj-text font-weight="600" font-size="14px" align="center">
-                        Credit note number<br>
+                        Rechungsnummer<br>
                         {{ formattedDocNum }}
                     </mj-text>
                 </mj-column>
-                <mj-column>
+                 <mj-column>
                     <mj-text font-weight="600" font-size="14px" align="center">
-                        Amount<br>
+                        Betrag<br>
                         {{ Document.DocTotal }} {{ Document.DocCurrency }}
                     </mj-text>
                 </mj-column>
                 <mj-column>
                     <mj-text font-weight="600" font-size="14px" align="center">
-                        Reference<br>
+                        Referenz<br>
                         {{ Document.NumAtCard | default: '-' }}
                     </mj-text>
                 </mj-column>
@@ -73,12 +73,11 @@
                     {%if remarkCl %}
                     {{ remarkCl.Text | replace: "\r", "\n" | newline_to_br }}
                     {%else%}
-                    Please note, the attached PDF document is the original credit note.
                     {%endif%}
-                </mj-text>  
+                </mj-text>
                 <mj-text padding-top="20px">
-                    With kind regards<br>
-                    Your {{ Company.CompanyName }} Team
+                    Mit freundlichen Grüßen<br>
+                    Ihr {{ Company.CompanyName }} Team
                 </mj-text>
                 <mj-divider border-width="6px" border-style="solid" border-color="#a6a6a6" padding-top="30px"/>
 

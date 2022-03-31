@@ -1,1 +1,2 @@
-Ihre {{ Company.CompanyName }} Gutschrift {{ Document.DocNum }}
+{% assign formattedDocNum = DocumentSeries.Prefix | append: Document.DocNum | append: DocumentSeries.Suffix %}
+Ihre {{ Company.CompanyName }} Gutschrift {{ formattedDocNum }}

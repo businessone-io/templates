@@ -1,1 +1,2 @@
-{{ Company.CompanyName }} Bestellung {{ Document.DocNum }}
+{% assign formattedDocNum = DocumentSeries.Prefix | append: Document.DocNum | append: DocumentSeries.Suffix %}
+{{ Company.CompanyName }} Bestellung {{ formattedDocNum }}

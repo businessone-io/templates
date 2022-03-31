@@ -1,5 +1,5 @@
-{% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_INV_E" | first %}
-{% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_INV_E" | first %}
+{% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_INV_D" | first %}
+{% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_INV_D" | first %}
 {% assign contactDocument = BusinessPartner.ContactEmployees | where: "InternalCode", Document.ContactPersonCode | first %}
 {% if contactDocument.Name %}
 Dear {{ contactDocument.Name }},
@@ -7,7 +7,7 @@ Dear {{ contactDocument.Name }},
 Dear Sir or Madam,
 {% endif %}
  
-attached to this e-mail you will find your electronic quotation.
+attached to this e-mail you will find your electronic invoice.
  
 With kind regards<br>
 Your {{ Company.CompanyName }} Team

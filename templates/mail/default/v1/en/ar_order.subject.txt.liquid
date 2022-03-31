@@ -1,1 +1,2 @@
-Ihre {{ Company.CompanyName }} Auftragsbestätigung {{ Document.DocNum }}
+{% assign formattedDocNum = DocumentSeries.Prefix | append: Document.DocNum | append: DocumentSeries.Suffix %}
+Your {{ Company.CompanyName }} order confirmation {{ formattedDocNum }}

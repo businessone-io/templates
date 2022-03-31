@@ -1,5 +1,5 @@
-{% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_RIN_E" | first %}
-{% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_RIN_E" | first %}
+{% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_DPI_E" | first %}
+{% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_DPI_E" | first %}
 {% assign formattedDocNum = DocumentSeries.Prefix | append: Document.DocNum | append: DocumentSeries.Suffix %}
 
 {% assign contactDocument = BusinessPartner.ContactEmployees | where: "InternalCode", Document.ContactPersonCode | first %}
@@ -10,9 +10,9 @@
             <mj-all font-family="Calibri, sans" />
         </mj-attributes>
         <mj-preview>
-            Your {{ Company.CompanyName }} credit note {{ formattedDocNum }}
+            Your {{ Company.CompanyName }} down paymemt invoice {{ formattedDocNum }}
         </mj-preview>
-        <mj-title> Your {{ Company.CompanyName }} credit note {{ formattedDocNum }}</mj-title>
+        <mj-title> Your {{ Company.CompanyName }} down paymemt invoice {{ formattedDocNum }}</mj-title>
     </mj-head>
     <mj-body>
         <mj-section padding-top="50px" padding-bottom="50px">
@@ -22,7 +22,7 @@
         </mj-section>
         <mj-section background-color="#e7e6e6" padding-top="10px" padding-bottom="10px">
             <mj-column>
-                <mj-text padding-bottom="0px" font-weight="400" font-size="20px" align="center">CREDITNOTE</mj-text>
+                <mj-text padding-bottom="0px" font-weight="400" font-size="20px" align="center">DOWNPAYMENTINVOICE</mj-text>
                 <mj-text padding-top="0px" font-weight="400" font-size="20px" align="center">{{ formattedDocNum }}</mj-text>
                 <mj-divider border-width="6px" border-style="solid" border-color="#a6a6a6" />
             </mj-column>
@@ -40,7 +40,7 @@
                     {% if remarkOp %}
                     {{ remarkOp.Text | replace: "\r", "\n" | newline_to_br }}
                     {% else %}
-                    attached to this e-mail you will find your electronic credit note.
+                    attached to this e-mail you will find your electronic down payment invoice.
                     {% endif %}
                 </mj-text>
             </mj-column>
@@ -49,11 +49,11 @@
             <mj-group>
                 <mj-column width="33.333333%">
                     <mj-text font-weight="600" font-size="14px" align="center">
-                        Credit note number<br>
+                        Invoice number<br>
                         {{ formattedDocNum }}
                     </mj-text>
                 </mj-column>
-                <mj-column>
+                 <mj-column>
                     <mj-text font-weight="600" font-size="14px" align="center">
                         Amount<br>
                         {{ Document.DocTotal }} {{ Document.DocCurrency }}
@@ -68,12 +68,12 @@
             </mj-group>
         </mj-section>
         <mj-section background-color="#e7e6e6" padding-top="10px" padding-bottom="10px">
-            <mj-column>
+           <mj-column>
                 <mj-text>
                     {%if remarkCl %}
                     {{ remarkCl.Text | replace: "\r", "\n" | newline_to_br }}
                     {%else%}
-                    Please note, the attached PDF document is the original credit note.
+                    Please note, the attached PDF document is the original invoice.
                     {%endif%}
                 </mj-text>  
                 <mj-text padding-top="20px">

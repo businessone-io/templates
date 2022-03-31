@@ -2,12 +2,12 @@
 {% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_INV_D" | first %}
 {% assign contactDocument = BusinessPartner.ContactEmployees | where: "InternalCode", Document.ContactPersonCode | first %}
 {% if contactDocument.Name %}
-Dear {{ contactDocument.Name }},
+Sehr geehrte(r) {{ contactDocument.Name }},
 {% else %}
-Dear Sir or Madam,
+Sehr geehrte Damen und Herren,
 {% endif %}
  
-attached to this e-mail you will find your electronic delivery note.
+im Anhang dieser E-Mail finden Sie Ihre Anzahlunsgrechnung.
  
-With kind regards<br>
-Your {{ Company.CompanyName }} Team
+Mit freundlichen Grüßen
+Ihr {{ Company.CompanyName }} Team

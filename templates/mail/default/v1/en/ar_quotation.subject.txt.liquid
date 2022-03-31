@@ -1,1 +1,2 @@
-Ihr {{ Company.CompanyName }} Angebot {{ Document.DocNum }}
+{% assign formattedDocNum = DocumentSeries.Prefix | append: Document.DocNum | append: DocumentSeries.Suffix %}
+Your {{ Company.CompanyName }} quotation {{ formattedDocNumm }}
