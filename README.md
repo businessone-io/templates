@@ -1,2 +1,2 @@
-# Business One Cloud Templates
+# Business One Cloud Mailer Templates
 
