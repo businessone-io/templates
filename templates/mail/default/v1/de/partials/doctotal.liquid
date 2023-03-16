@@ -1,0 +1,7 @@
+{%liquid
+    assign docTotal = Document.DocTotalFc
+    if docTotal == 0
+        assign docTotal = Document.DocTotal
+    endif
+%}
+{{ docTotal }} {{ Document.DocCurrency }}
