@@ -1,30 +1,28 @@
-{% assign salutationOverride = PredefinedTexts | where: "TextCode" , "B1IO_SalutationE" | first %}
-{% if salutationOverride and salutationOverride.Text and salutationOverride.Text != "" %}
-    {{ salutationOverride.Text }}
-{% else %}
-    {% assign contactDocument = BusinessPartner.ContactEmployees | where: "InternalCode", Document.ContactPersonCode | first %}
+{%- assign salutationOverride = PredefinedTexts | where: "TextCode" , "B1IO_SalutationE" | first -%}
+{%- if salutationOverride and salutationOverride.Text and salutationOverride.Text != "" -%}
+    {{- salutationOverride.Text -}}
+{%- else -%}
+    {%- assign contactDocument = BusinessPartner.ContactEmployees | where: "InternalCode", Document.ContactPersonCode | first -%}
     
-    {% if   contactDocument and contactDocument.Gender == "gt_Male" 
+    {%- if  contactDocument and contactDocument.Gender == "gt_Male" 
         and contactDocument.LastName and contactDocument.LastName != ""
         and contactDocument.FirstName and contactDocument.FirstName != "" 
-        %}
-        Dear {{ contactDocument.FirstName }} {{ contactDocument.LastName }}
+        -%}
+        Dear {{ contactDocument.FirstName }} {{ contactDocument.LastName -}}
     {% elsif contactDocument and contactDocument.Gender == "gt_Female" 
          and contactDocument.LastName and contactDocument.LastName != ""
          and contactDocument.FirstName and contactDocument.FirstName != "" 
          %}
-        Dear {{ contactDocument.FirstName }} {{ contactDocument.LastName }}
-    {% elsif contactDocument and contactDocument.Gender == "gt_Male" 
+        Dear {{ contactDocument.FirstName }} {{ contactDocument.LastName -}}
+    {%- elsif contactDocument and contactDocument.Gender == "gt_Male" 
         and contactDocument.LastName and contactDocument.LastName != ""
-        %}
-        Dear Mr. {{ contactDocument.LastName }}
-    {% elsif contactDocument and contactDocument.Gender == "gt_Female" 
+        -%}
+        Dear Mr. {{ contactDocument.LastName -}}
+    {%- elsif contactDocument and contactDocument.Gender == "gt_Female" 
          and contactDocument.LastName and contactDocument.LastName != ""
-         %}
-        Dear Mrs. {{ contactDocument.LastName }}
-    {% elsif contactDocument.Name and contactDocument.Name != "" %}
-        Dear {{ contactDocument.Name }}
-    {% else %}
-        Dear Sir or Madam
-    {% endif %}
-{% endif %}
+        -%}
+        Dear Mrs. {{ contactDocument.LastName -}}
+    {%- elsif contactDocument.Name and contactDocument.Name != "" -%}
+        Dear {{ contactDocument.Name -}}
+    {%- else -%}Dear Sir or Madam{%- endif -%}
+{%- endif -%}
