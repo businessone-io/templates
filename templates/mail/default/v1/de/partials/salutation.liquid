@@ -1,6 +1,6 @@
 {% assign salutationOverride = PredefinedTexts | where: "TextCode" , "B1IO_SalutationD" | first %}
 {% if salutationOverride and salutationOverride.Text and salutationOverride.Text != "" %}
-    {{ salutationOverride.Text }}
+    {{ salutationOverride.Text -}}
 {% else %}
     {% assign contactDocument = BusinessPartner.ContactEmployees | where: "InternalCode", Document.ContactPersonCode | first %}
     
@@ -8,22 +8,22 @@
         and contactDocument.LastName and contactDocument.LastName != ""
         and contactDocument.FirstName and contactDocument.FirstName != "" 
         %}
-        Sehr geehrter {{ contactDocument.FirstName }} {{ contactDocument.LastName }}
+        Sehr geehrter {{ contactDocument.FirstName }} {{ contactDocument.LastName -}}
     {% elsif contactDocument and contactDocument.Gender == "gt_Female" 
          and contactDocument.LastName and contactDocument.LastName != ""
          and contactDocument.FirstName and contactDocument.FirstName != "" 
          %}
-        Sehr geehrte {{ contactDocument.FirstName }} {{ contactDocument.LastName }}
+        Sehr geehrte {{ contactDocument.FirstName }} {{ contactDocument.LastName -}}
     {% elsif contactDocument and contactDocument.Gender == "gt_Male" 
         and contactDocument.LastName and contactDocument.LastName != ""
         %}
-        Sehr geehrter Herr {{ contactDocument.LastName }}
+        Sehr geehrter Herr {{ contactDocument.LastName -}}
     {% elsif contactDocument and contactDocument.Gender == "gt_Female" 
          and contactDocument.LastName and contactDocument.LastName != ""
          %}
-        Sehr geehrte Frau {{ contactDocument.LastName }}
+        Sehr geehrte Frau {{ contactDocument.LastName -}}
     {% elsif contactDocument.Name and contactDocument.Name != "" %}
-        Sehr geehrte(r) {{ contactDocument.Name }}
+        Sehr geehrte(r) {{ contactDocument.Name -}}
     {% else %}
         Sehr geehrte Damen und Herren
     {% endif %}
