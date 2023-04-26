@@ -1,12 +1,8 @@
 {% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_PQT_E" | first %}
 {% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_PQT_E" | first %}
-{% assign contactDocument = BusinessPartner.ContactEmployees | where: "InternalCode", Document.ContactPersonCode | first %}
-{% if contactDocument.Name %}
-Dear {{ contactDocument.Name }},
-{% else %}
-Dear Sir or Madam,
-{% endif %}
- 
+
+{% render "./partials/salutation.liquid" -%},
+
 attached to this e-mail you will find the purchase quotation.
  
 With kind regards<br>

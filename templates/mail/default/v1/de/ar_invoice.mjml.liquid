@@ -2,8 +2,6 @@
 {% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_INV_D" | first %}
 {% assign formattedDocNum = DocumentSeries.Prefix | append: Document.DocNum | append: DocumentSeries.Suffix %}
 
-{% assign contactDocument = BusinessPartner.ContactEmployees | where: "InternalCode", Document.ContactPersonCode | first %}
-
 <mjml>
     <mj-head>
         <mj-attributes>

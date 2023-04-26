@@ -1,12 +1,8 @@
 {% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_INV_D" | first %}
 {% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_INV_D" | first %}
-{% assign contactDocument = BusinessPartner.ContactEmployees | where: "InternalCode", Document.ContactPersonCode | first %}
-{% if contactDocument.Name %}
-Sehr geehrte(r) {{ contactDocument.Name }},
-{% else %}
-Sehr geehrte Damen und Herren,
-{% endif %}
- 
+
+{% render "./partials/salutation.liquid" -%},
+
 im Anhang dieser E-Mail finden Sie Ihre Anzahlunsgrechnung.
  
 Mit freundlichen Grüßen

@@ -22,6 +22,10 @@
          and contactDocument.LastName and contactDocument.LastName != ""
          -%}
         Sehr geehrte Frau {{ contactDocument.LastName -}}
+    {%- elsif contactDocument.LastName and contactDocument.LastName != ""
+          and contactDocument.FirstName and contactDocument.FirstName != "" 
+         -%}
+        Sehr geehrte(r) {{ contactDocument.FirstName }} {{ contactDocument.LastName -}}        
     {%- elsif contactDocument.Name and contactDocument.Name != "" -%}
         Sehr geehrte(r) {{ contactDocument.Name -}}
     {%- else -%}Sehr geehrte Damen und Herren{%- endif -%}

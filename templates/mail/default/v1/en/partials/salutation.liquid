@@ -22,6 +22,10 @@
          and contactDocument.LastName and contactDocument.LastName != ""
         -%}
         Dear Mrs. {{ contactDocument.LastName -}}
+    {%- elsif contactDocument.LastName and contactDocument.LastName != ""
+          and contactDocument.FirstName and contactDocument.FirstName != "" 
+         -%}
+        Dear {{ contactDocument.FirstName }} {{ contactDocument.LastName -}}
     {%- elsif contactDocument.Name and contactDocument.Name != "" -%}
         Dear {{ contactDocument.Name -}}
     {%- else -%}Dear Sir or Madam{%- endif -%}
