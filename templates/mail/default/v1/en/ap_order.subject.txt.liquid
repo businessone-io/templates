@@ -1,2 +1,2 @@
 {% assign formattedDocNum = DocumentSeries.Prefix | append: Document.DocNum | append: DocumentSeries.Suffix %}
-{{ Company.CompanyName }} Purchase Order {{ formattedDocNum }}
+{{ Company.CompanyName }} Purchase Order {{ formattedDocNum }} | {{ Document.NumAtCard }} | {{ Document.CardName }}
