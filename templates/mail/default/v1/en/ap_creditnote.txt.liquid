@@ -1,0 +1,9 @@
+{% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_RPC_E" | first %}
+{% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_RPC_E" | first %}
+
+{% render "./partials/salutation.liquid" -%},
+ 
+attached to this e-mail you will find your electronic credit note.
+ 
+With kind regards
+Your {{ Company.CompanyName }} Team

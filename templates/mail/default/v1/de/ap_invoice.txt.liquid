@@ -1,0 +1,9 @@
+{% assign remarkOp = PredefinedTexts | where: "TextCode", "B1IO_RemarkOp_PCH_D" | first %}
+{% assign remarkCl = PredefinedTexts | where: "TextCode", "B1IO_RemarkCl_PCH_D" | first %}
+
+{% render "./partials/salutation.liquid" -%},
+ 
+im Anhang dieser E-Mail finden Sie Ihre elektronische Rechnung.
+ 
+Mit freundlichen Grüßen
+Ihr {{ Company.CompanyName }} Team
