@@ -1,0 +1,981 @@
+    (      
+    $Metadata:= {
+         "supportedModels": [ "urn:cen.eu:en16931:2017" ],
+         "name": {
+            "de":"Business One Cloud E-Rechnung",
+            "en":"Business One Cloud e-invoice"
+         },
+         "description": {
+            "de":"SAP Business One Cloud standard E-Rechnungs Export",
+            "en":"SAP Business One Cloud standard e-invoice export" 
+         },
+         "customizing": [
+             { "id": "GENERAL", "name": { "de": "Allgemein", "en": "General" }, "type": "info", "components": [ 
+                  { "id": "INFO", "name": { "de": "test", "en": "test en" } , "type": "info" },
+                  { "id": "G-01", "name": { "de": "Umsatzsteuerkategorie Code", "en": "Tax category code" } , "default": '$lookup({"A1": "S","A2": "S","A10": "E","A71": "AE","A7": "K","A0": "G","A3": "G"},Code)'},
+                  { "id": "G-02", "name": { "de": "Umsatzsteuerkategorie Ausnahme Text", "en": "Tax exemption reason text" } , "default": '$lookup({"A10": "Umsatz nicht steuerbar","A71": "Reverse Charge","A7": "steuerfreie innergemeinschaftliche Lieferung","A0": "steuerfreie innergemeinschaftliche Lieferung","A3": "steuerfreie innergemeinschaftliche Lieferung"},Code)'},
+                  { "id": "G-03", "name": { "de": "Umsatzsteuerkategorie Ausnahme Code", "en": "Tax exemption reason code" } , "default": '$lookup({},Code)' },
+                  { "id": "G-04", "name": { "de": "Mengeneinheiten Code", "en": "Unit of measure code" } , "default": '( $norm := $lowercase($trim($exists(Code) and Code != null ? $string(Code) : "")); $lookup({"km": "KMT", "m": "MTR", "dm": "DMT", "cm": "CMT", "mm": "MMT","m²": "MTK", "dm²": "DMK", "cm²": "CMK", "m³":  "MTQ", "dm³": "DMQ", "l": "LTR", "dl": "DLT", "cl": "CLT", "cm³": "CMQ", "ml": "MLT","t": "TNE", "kg": "KGM", "hg": "HGM", "g": "GRM", "mg": "MGM","y": "ANN", "mo": "MON", "wk": "WEE", "d": "DAY", "h": "HUR", "min": "MIN", "s": "SEC","MWh": "MWH", "kWh": "KWH","Gbyte": "E34", "Mbyte": "4L"}, $norm) )' }
+                ]
+             },
+             { "id": "BT-1", "name": { "de": "Rechnungsnummer", "en": "invoice number" } , "default": "Document.DocNum" },
+             { "id": "BT-2", "name": { "de": "Rechnungsdatum", "en": "invoice date" } , "default": "Document.DocDate" },
+             { "id": "BT-3", "name": { "de": "Rechnungstyp", "en": "invoice type" } , "default": "Document.DocObjectCode = 'oCreditNotes' ? '381' : '380'" },
+             { "id": "BT-5", "name": { "de": "Rechnunsgwährung", "en": "invoice currency" } , "default": "Document.DocCurrency" },
+             { "id": "BT-6", "name": { "de": "Umsatzsteuerabrechnungswährung", "en": "VAT accounting currency" } , "default": "Document.DocCurrency != Company.LocalCurrency ? Company.LocalCurrency" },
+             { "id": "BT-7", "name": { "de": "Steuerfälligkeitsdatum", "en": "tax point date" } },
+             { "id": "BT-8", "name": { "de": "Steuerfälligkeitsdatum-Code", "en": "tax point date code" } },
+             { "id": "BT-9", "name": { "de": "Fälligkeitsdatum", "en": "due date" }, "default": "Document.DocDueDate" },
+             { "id": "BT-10", "name": { "de": "Käuferreferenz", "en": "buyer reference" }, "default": "Document.NumAtCard" },
+             { "id": "BT-11", "name": { "de": "Projektreferenz", "en": "project reference" }, "default": "Document.Project" },
+             { "id": "BT-12", "name": { "de": "Vertragsreferenz", "en": "contract reference" }, "default": "($agreement:=[ Document.BlanketAgreement , Document.DocumentLines.BlanketAgreement ][ $ != null][0];[$agreement.NumAtCard , $agreement.DocNum][0])" },
+             { "id": "BT-13", "name": { "de": "Bestellungsreferenz", "en": "purchase order reference" }, "default": "[Document.BaseDocuments[DocType='17'][0].NumAtCard , Document.NumAtCard ][0]" },
+             { "id": "BT-14", "name": { "de": "Kundenauftragsreferenz", "en": "sales order reference" }, "default": "Document.BaseDocuments[DocType='17'][0].DocNum" },
+             { "id": "BT-15", "name": { "de": "Eingangsbestätigung (Receiving Advice)", "en": "Receiving advice reference" } },
+             { "id": "BT-16", "name": { "de": "Versandanzeige (Despatch Advice)", "en": "despatch advice reference" }, "default": "Document.BaseDocuments[DocType='15'][0].DocNum" },
+             { "id": "BT-17", "name": { "de": "Ausschreibung/Los", "en": "Tender or lot reference" } },
+             { "id": "BT-18", "name": { "de": "Invoiced object reference", "en": "Invoiced object reference" } },
+             { "id": "BT-19", "name": { "de": "Käufer Buchungsreferenz", "en": "Buyer accounting reference" } },
+             { "id": "BT-20", "name": { "de": "Zahlungsbedingungen", "en": "Payment terms" }, "default": "(Document.LanguageCode = 9 ? $PaymentTerms(Document.PaymentTermsType).de : $PaymentTerms(Document.PaymentTermsType).en)"  },
+             { "id": "BG-1", "name": { "de": "Rechnungstexte", "en": "Invoice notes" }, "default": "[{ 'BT-21': 'ACB', 'BT-22': Document.OpeningRemarks }, { 'BT-21': 'ACB', 'BT-22': Document.ClosingRemarks }]"},
+             { "id": "BG-2", "name": { "de": "Prozesssteuerung", "en": "Process control" }, "type": "info", "components": [ 
+                    { "id": "BT-23", "name": { "de": "Geschäftsprozesses", "en": "Business process type"}, "default": "StandardFormat.processControl.businessProcessType" }, 
+                    { "id": "BT-24", "name": { "de": "Spezifikationskennung", "en": "Specification identifier" }, "default": "StandardFormat.processControl.specificationIdentifier" }] 
+             },
+             { "id": "BG-3", "name": { "de": "Vorangegangene Rechnungen", "en": "Preceding invoices" }, "default": "Document.BaseDocuments[ DocType in ['13' , '14' ] and Cancelled = 'tNO'].{ 'id': DocNum, 'date': DocDate }" },
+             { "id": "BG-4", "name": { "de": "Verkäufer", "en": "Seller" }, "type": "info", "components": [ 
+                    { "id": "BT-27", "name": { "de": "Name", "en": "Name"}, "default": "Company.CompanyName" },
+                    { "id": "BT-28", "name": { "de": "Trading name", "en": "Trading name"}, "default": "Company.AliasName" },
+                    { "id": "BT-29", "name": { "de": "Verkäuferkennung", "en": "Seller identifier"}, "default": "[{ 'id': $$.Company.GlobalLocationNumber, 'schemeID': '0088' }, $$.Company.EORINumber ? { 'id': 'EORI:' & $$.Company.EORINumber }]" },
+                    { "id": "BT-30", "name": { "de": "Seller legal registration identifier", "en": "Seller legal registration identifier"}, "default": "Company.OrganizationNumber" },
+                    { "id": "BT-31", "name": { "de": "Umsatzsteuernummer", "en": "Seller VAT identifier"}, "default": "Company.FederalTaxID" },
+                    { "id": "BT-32", "name": { "de": "Seller tax registration identifier", "en": "Seller tax registration identifier"}, "default": "Company.TaxOffice" },
+                    { "id": "BT-33", "name": { "de": "Weitere rechtliche Informationen", "en": "Seller additional legal information"}, "default": "Company.GeneralManager" },
+                    { "id": "BT-34", "name": { "de": "Elektronische Adresse", "en": "Seller electronic address"}, "default": "[{ 'id': Company.eMail, 'schemeID': 'EM' }][0]" },
+                    { "id": "BG-5", "name": { "de": "Verkäuferanschrift", "en": "Seller postal address" }, "type": "info", "components": [
+                        { "id": "BT-35", "name": { "de": "Adresszeile 1", "en": "Seller address line 1"}, "default": '(Company.Street & " " & Company.StreetNo) ~> $trim' },
+                        { "id": "BT-36", "name": { "de": "Adresszeile 2", "en": "Seller address line 2"}, "default": 'Company.Block' },
+                        { "id": "BT-162", "name": { "de": "Adresszeile 3", "en": "Seller address line 3"}, "default": 'Company.Building' },
+                        { "id": "BT-37", "name": { "de": "Stadt", "en": "Seller city"}, "default": "Company.City" },
+                        { "id": "BT-38", "name": { "de": "Postleitzahl", "en": "Seller post code"}, "default": "Company.ZipCode" },
+                        { "id": "BT-39", "name": { "de": "Region", "en": "Seller country subdivision"}, "default": "Company.StateName" },
+                        { "id": "BT-40", "name": { "de": "Land", "en": "Seller country"}, "default": "Company.Country" }
+                    ]},
+                    { "id": "BG-6", "name": { "de": "Verkäuferkontakt", "en": "Seller contact" }, "type": "info", "components": [
+                        { "id": "BT-41", "name": { "de": "Ansprechpartner", "en": "Seller contact point"}, "default": 'Document.EmployeeInfo.FirstName & " " & Document.EmployeeInfo.LastName' },
+                        { "id": "BT-42", "name": { "de": "Telefonnummer", "en": "Seller contact telephone number"}, "default": "[Document.EmployeeInfo.OfficePhone ? Document.EmployeeInfo.OfficePhone, Company.PhoneNumber1][0]" },
+                        { "id": "BT-43", "name": { "de": "E-Mail", "en": "Seller contact email address"}, "default": "[Document.EmployeeInfo.eMail ? Document.EmployeeInfo.eMail, Company.eMail][0]" }
+                    ]}
+                    ] 
+             },
+             { "id": "BG-7", "name": { "de": "Käufer", "en": "Buyer" }, "type": "info", "components": [ 
+                    { "id": "BT-44", "name": { "de": "Name", "en": "Name"}, "default": "Document.CardName" },
+                    { "id": "BT-45", "name": { "de": "Trading name", "en": "Trading name"}, "default": "BusinessPartner.AliasName" },
+                    { "id": "BT-46", "name": { "de": "Käuferkennung", "en": "Buyer identifier"}, "default": "[{ 'id': BusinessPartner.GlobalLocationNumber, 'schemeID': '0088' }, BusinessPartner.EORINumber ? { 'id': 'EORI:' & BusinessPartner.EORINumber } , { 'id': BusinessPartner.CardCode }]" },
+                    { "id": "BT-47", "name": { "de": "Buyer legal registration identifier", "en": "Buyer legal registration identifier"} },
+                    { "id": "BT-48", "name": { "de": "Umsatzsteuernummer", "en": "Buyer VAT identifier"}, "default": "Document.FederalTaxID" },
+                    { "id": "BT-49", "name": { "de": "Elektronische Adresse", "en": "Buyer electronic address"}, "default": "([BusinessPartner.ContactEmployees[ EmailGroupCode = 'Invoice' and Active = 'tYES' and E_Mail][0].E_Mail, BusinessPartner.ContactEmployees[ InternalCode =  $$.Document.ContactPersonCode and E_Mail ].E_Mail , BusinessPartner.EmailAddress][0]).{ 'id': $, 'schemeID': 'EM' }" },
+                    { "id": "BG-8", "name": { "de": "Käuferanschrift", "en": "Buyer postal address" }, "type": "info", "components": [
+                        { "id": "BT-50", "name": { "de": "Adresszeile 1", "en": "Buyer address line 1"}, "default": "[Document.AddressExtension.BillToStreet, Document.AddressExtension.BillToStreetNo ][$] ~> $join(' ')" },
+                        { "id": "BT-51", "name": { "de": "Adresszeile 2", "en": "Buyer address line 2"}, "default": "Document.AddressExtension.BillToAddress2" },
+                        { "id": "BT-163", "name": { "de": "Adresszeile 3", "en": "Buyer address line 3"}, "default": "Document.AddressExtension.BillToAddress3" },
+                        { "id": "BT-52", "name": { "de": "Stadt", "en": "Buyer city"}, "default": "Document.AddressExtension.BillToCity" },
+                        { "id": "BT-53", "name": { "de": "Postleitzahl", "en": "Buyer post code"}, "default": "Document.AddressExtension.BillToZipCode" },
+                        { "id": "BT-54", "name": { "de": "Region", "en": "Buyer country subdivision"} },
+                        { "id": "BT-55", "name": { "de": "Land", "en": "Buyer country"}, "default": "Document.AddressExtension.BillToCountry" }
+                    ]},
+                    { "id": "BG-9", "name": { "de": "Käuferkontakt", "en": "Buyer contact" }, "type": "info", "components": [
+                        { "id": "BT-56", "name": { "de": "Ansprechpartner", "en": "Buyer contact point"}, "default": "BusinessPartner.ContactEmployees[ InternalCode =  $$.Document.ContactPersonCode ].Name" },
+                        { "id": "BT-57", "name": { "de": "Telefonnummer", "en": "Buyer contact telephone number"}, "default": "BusinessPartner.ContactEmployees[ InternalCode =  $$.Document.ContactPersonCode ].Phone1" },
+                        { "id": "BT-58", "name": { "de": "E-Mail", "en": "Buyer contact email address"}, "default": "BusinessPartner.ContactEmployees[ InternalCode =  $$.Document.ContactPersonCode ].E_Mail" }
+                    ]}
+                    ] 
+             },
+             { "id": "BG-10", "name": { "de": "Zahlungsempfänger", "en": "Payee" }, "type": "info", "components": [ 
+                    { "id": "BT-59", "name": { "de": "Name", "en": "Name"} },
+                    { "id": "BT-60", "name": { "de": "Zahlungsempfängerkennung", "en": "Payee identifier"} },
+                    { "id": "BT-61", "name": { "de": "Payee legal registration identifier", "en": "Payee legal registration identifier"} }
+                    ] 
+             },
+             { "id": "BG-11", "name": { "de": "Steuervertreter", "en": "Seller tax representative" }, "type": "info", "components": [ 
+                    { "id": "BT-62", "name": { "de": "Name", "en": "Name"} },
+                    { "id": "BT-63", "name": { "de": "Umsatzsteuernummer", "en": "VAT identifier"} },
+                    { "id": "BG-12", "name": { "de": "Steuervertreteranschrift", "en": "Seller tax representative postal address" }, "type": "info", "components": [
+                        { "id": "BT-64", "name": { "de": "Adresszeile 1", "en": "Address line 1"} },
+                        { "id": "BT-65", "name": { "de": "Adresszeile 2", "en": "Address line 2"} },
+                        { "id": "BT-164", "name": { "de": "Adresszeile 3", "en": "Address line 3"} },
+                        { "id": "BT-66", "name": { "de": "Stadt", "en": "City"} },
+                        { "id": "BT-67", "name": { "de": "Postleitzahl", "en": "Post code"} },
+                        { "id": "BT-68", "name": { "de": "Region", "en": "Country subdivision"} },
+                        { "id": "BT-69", "name": { "de": "Land", "en": "Country"} }
+                    ]}
+                    ] 
+             },
+             { "id": "BG-13", "name": { "de": "Lieferinformationen", "en": "Deliver to party" }, "type": "info", "components": [ 
+                    { "id": "BT-70", "name": { "de": "Empfänger Name", "en": "Deliver to party name"}, "default": "[Document.AddressExtension.U_B1IO_AltNameS ? Document.AddressExtension.U_B1IO_AltNameS , Document.CardName][0]" },
+                    { "id": "BT-71", "name": { "de": "Lieferort", "en": "location identifier"}, "default": "[{ 'id': Document.AddressExtension.ShipToGlobalLocationNumber, 'schemeID': '0088' }][0]" },
+                    { "id": "BT-72", "name": { "de": "Lieferdatum", "en": "Actual delivery date"}, "default": "Document.DocumentLines[0].ActualDeliveryDate" },
+                    { "id": "BG-14", "name": { "de": "Abrechnungszeitraum", "en": "Invoicing period" }, "type": "info", "components": [
+                            { "id": "BT-73", "name": { "de": "Anfangsdatum", "en": "Start date"} },
+                            { "id": "BT-74", "name": { "de": "Enddatum", "en": "End date"} }
+                        ]
+                    },
+                    { "id": "BG-15", "name": { "de": "Lieferadresse", "en": "Delivery address" }, "type": "info", "components": [
+                        { "id": "BT-75", "name": { "de": "Adresszeile 1", "en": "Address line 1"}, "default": "[Document.AddressExtension.ShipToStreet, Document.AddressExtension.ShipToStreetNo ][$] ~> $join(' ')" },
+                        { "id": "BT-76", "name": { "de": "Adresszeile 2", "en": "Address line 2"}, "default": "Document.AddressExtension.ShipToAddress2" },
+                        { "id": "BT-165", "name": { "de": "Adresszeile 3", "en": "Address line 3"}, "default": "Document.AddressExtension.ShipToAddress3" },
+                        { "id": "BT-77", "name": { "de": "Stadt", "en": "City"}, "default": "Document.AddressExtension.ShipToCity" },
+                        { "id": "BT-78", "name": { "de": "Postleitzahl", "en": "Post code"}, "default": "Document.AddressExtension.ShipToZipCode" },
+                        { "id": "BT-79", "name": { "de": "Region", "en": "Country subdivision"} },
+                        { "id": "BT-80", "name": { "de": "Land", "en": "Country"}, "default": "Document.AddressExtension.ShipToCountry" }
+                    ]}
+                    ] 
+             },
+             { "id": "BG-16", "name": { "de": "Zahlungsanweisung", "en": "Payment instructions" }, "type": "info", "components": [ 
+                    { "id": "BT-81-TYPE", "name": { "de": "Zahlungsmittelart", "en": "Payment means type"}, "default": "(Document.WizardPaymentMethod.PaymentMeans = 'bopmBankTransfer' and Document.WizardPaymentMethod.DebitMemo = 'tYES') ? 'DEB' : (Document.WizardPaymentMethod.PaymentMeans = 'bopmBankTransfer' and Document.WizardPaymentMethod.DebitMemo = 'tNO') ? 'CRE' : 'UNK'" },
+                    { "id": "BT-82", "name": { "de": "Zahlungsmittel", "en": "Payment means"}, "default": "Document.WizardPaymentMethod.Description" },
+                    { "id": "BT-83", "name": { "de": "Verwendungszweck", "en": "Remittance information"}, "default": "Document.DocNum" },
+                    { "id": "BG-17", "name": { "de": "Überweisung", "en": "Credit transfer" }, "type": "info", "components": [
+                        { "id": "BT-81-CRE", "name": { "de": "Überweisung Zahlungsmittel Code", "en": "Payment means type code"}, "default": "'58'" },
+                        { "id": "BG-17-HB", "name": { "de": "Hausbankverbindungen", "en": "House bank accounts"}, "default": "Company.HouseBankAccounts[ IBAN ]" },
+                        { "id": "BT-84", "name": { "de": "IBAN/Kontonummer", "en": "Payment account"}, "default": "HouseBankAccount.IBAN" },
+                        { "id": "BT-85", "name": { "de": "Kontoinhaber", "en": "Payment account name"}, "default": "Company.CompanyName" },
+                        { "id": "BT-86", "name": { "de": "BIC", "en": "Payment service provider identifier "}, "default": "HouseBankAccount.BICSwiftCode" }
+                        ]
+                    },
+                    { "id": "BG-18", "name": { "de": "Zahlungskarte", "en": "Payment card" }, "type": "info", "components": [
+                        { "id": "BT-87", "name": { "de": "Kartennummer", "en": "Payment card number"} },
+                        { "id": "BT-88", "name": { "de": "Karteninhaber", "en": "Payment card holder"} }
+                        ]
+                    },
+                    { "id": "BG-19", "name": { "de": "Lastschrift", "en": "Direct debit" }, "type": "info", "components": [
+                        { "id": "BT-81-DEB", "name": { "de": "Zahlungsmittel Code", "en": "Payment means type code"}, "default": "'59'" },
+                        { "id": "BT-89", "name": { "de": "Mandatsreferenz", "en": "Mandate reference"}, "default": "BusinessPartner.BPBankAccounts[ AccountNo = $$.BusinessPartner.DefaultAccount and BankCode = $$.BusinessPartner.DefaultBankCode ].MandateID" },
+                        { "id": "BT-90", "name": { "de": "Gläubiger-ID", "en": "SEPA creditor ID"}, "default": "Company.SEPACreditorID" },
+                        { "id": "BT-91", "name": { "de": "IBAN/Kontonummer", "en": "Debited account identifier"}, "default": "BusinessPartner.BPBankAccounts[ AccountNo = $$.BusinessPartner.DefaultAccount and BankCode = $$.BusinessPartner.DefaultBankCode ].IBAN" }
+                        ]
+                    }
+                ]
+             },
+             { "id": "BG-20", "name": { "de": "Nachlässe auf Dokumentenebene", "en": "Document level allowances" }, "type": "info", "components": [ 
+                 { "id": "BT-97-T", "name": { "de": "Gesamtrabatt - Grund", "en": "discount reason"}, "default": "'Rabatt'" },
+                 { "id": "BT-98-T", "name": { "de": "Gesamtrabatt - Grund (Code)", "en": "discount reason code"}, "default": "'95'" }
+                 { "id": "BT-97", "name": { "de": "Nachlass - Grund", "en": "allowance reason"}, "default": "[DocumentAdditionalExpense.Remarks][$][0]" },
+                 { "id": "BT-98", "name": { "de": "Nachlass - Grund (Code)", "en": "allowance reason code"}, "default": "'95'" }
+                 ]
+             },
+             { "id": "BG-21", "name": { "de": "Zuschläge auf Dokumentenebene", "en": "Document level charges" }, "type": "info", "components": [ 
+                 { "id": "BT-104-T", "name": { "de": "Allgemeiner Zuschlag - Grund", "en": "generic charge reason"}, "default": "'Zuschlag'" },
+                 { "id": "BT-105-T", "name": { "de": "Allgemeiner Zuschlag - Grund (Code)", "en": "generic charge reason code"}, "default": "'FC'" }
+                 { "id": "BT-104", "name": { "de": "Zuschlag - Grund", "en": "charge reason"}, "default": "[DocumentAdditionalExpense.Remarks][$][0]" },
+                 { "id": "BT-105", "name": { "de": "Zuschlag - Grund (Code)", "en": "charge reason code"}, "default": "'FC'" }
+                 ]
+             },
+             { "id": "BG-25", "name": { "de": "Rechnungsposition", "en": "Invoice line" }, "type": "info", "components": [
+                    
+                    { "id": "BG-25-LINES", "name": { "de": "Positionen", "en": "Lines"}, "default": "Document.DocumentLines[ TreeType != 'iIngredient' ]^(VisualOrder)" },
+                    { "id": "BT-126", "name": { "de": "Rechnungsposition", "en": "Line identifier"}, "default": "Line.VisualOrder + 1" },
+                    { "id": "BT-127", "name": { "de": "Textvermerk", "en": "Line note"}, "default": "($num := Line.LineNum; [Line.FreeText, $TextLinesAfter($num)][$] ~> $join('\n'))" },
+                    { "id": "BT-128", "name": { "de": "Invoiced line object reference", "en": "Invoiced line object reference"} },
+                    { "id": "BT-129", "name": { "de": "Menge", "en": "Invoiced quantity"}, "default": "Document.DocType = 'dDocument_Service' ? 1 : Line.Quantity" },
+                    { "id": "BT-130", "name": { "de": "Mengeneineit", "en": "Invoiced quantity unit of measure code"}, "default": "[$MapUnitOfMeasure(Line.MeasureUnit), 'H87'][0]" },
+                    { "id": "BT-131", "name": { "de": "Gesamtbetrag der Rechnungsposition", "en": "Invoice line net amount"}, type: "info" },
+                    { "id": "BT-132", "name": { "de": "Bezugsposition in der Bestellung", "en": "Referenced purchase order line reference"}, "default": "Line.BaseDocuments[DocType = '17'][0].ExLineNo" }
+                    { "id": "BT-133", "name": { "de": "Käufer Buchungsreferenz", "en": "Invoice line Buyer accounting reference"} },
+                    { "id": "BG-26", "name": { "de": "Abrechnungszeitraum", "en": "Invoicing period" }, "type": "info", "components": [
+                            { "id": "BT-134", "name": { "de": "Anfangsdatum", "en": "Start date"} },
+                            { "id": "BT-135", "name": { "de": "Enddatum", "en": "End date"} }
+                        ]
+                    }
+                 ]
+             },
+             { "id": "BG-27", "name": { "de": "Nachlässe auf Positionsebene", "en": "Document line level allowances" }, "type": "info", "components": [ 
+                 { "id": "BT-139", "name": { "de": "Nachlass - Grund", "en": "allowance reason"}, "default": "[DocumentLineAdditionalExpense.Remarks][$][0]" },
+                 { "id": "BT-140", "name": { "de": "Nachlass - Grund (Code)", "en": "allowance reason code"}, "default": "'95'" }
+                 ]
+             },
+             { "id": "BG-28", "name": { "de": "Zuschläge auf Positionsebene", "en": "Document line level charges" }, "type": "info", "components": [ 
+                 { "id": "BT-144", "name": { "de": "Zuschlag - Grund", "en": "charge reason"}, "default": "[DocumentLineAdditionalExpense.Remarks][$][0]" },
+                 { "id": "BT-145", "name": { "de": "Zuschlag - Grund (Code)", "en": "charge reason code"}, "default": "'FC'" }
+                 ]
+             },
+             { "id": "BG-31", "name": { "de": "Artikel", "en": "Item information" }, "type": "info", "components": [
+                    { "id": "BT-153", "name": { "de": "Artikelname", "en": "Item name"}, "default": "Line.ItemDescription" },
+                    { "id": "BT-154", "name": { "de": "Artikelbeschreibung", "en": "Item description"}, "default": "(Document.LanguageCode = 9 ? [Line.Item.U_Text_VK,Line.Item.U_Text_VK_E, Line.ItemDetails] : [Line.Item.U_Text_VK_E, Line.Item.U_Text_VK,  Line.ItemDetails])[$][0]" },
+                    { "id": "BT-155", "name": { "de": "Verkäufer Artikelnummer", "en": "Item sellers identifier"}, "default": "Line.ItemCode" },
+                    { "id": "BT-156", "name": { "de": "Käufer Artikelnummer", "en": "Item buyers identifier"}, "default": "Line.SupplierCatNum" },
+                    { "id": "BT-157", "name": { "de": "Standard Artikelnummer", "en": "Item standard identifier"}, "default": "{ 'id': Line.StandardItemIdentificationCode.Code, 'schemeID': Line.StandardItemIdentificationCode.SchemaCode }" },
+                    { "id": "BT-158", "name": { "de": "Klassifizierung", "en": "Item classification"}, "default": "[[ Line.CommodityClassificationCode ? { 'id': Line.CommodityClassificationCode.Code, 'schemeID': Line.CommodityClassificationCode.SchemaCode }, Line.Item.CommodityClassificationCode ? { 'id': Line.Item.CommodityClassificationCode.Code, 'schemeID': Line.Item.CommodityClassificationCode.SchemaCode } ][0]]" },
+                    { "id": "BT-159", "name": { "de": "Herkunftsland", "en": "Item country of origin"}, "default": "[Line.CountryOrg, Line.Item.ItemCountryOrg][0]" },
+                    { "id": "BG-32", "name":  { "de": "Artikeleigenschaften", "en": "Item attributes" } } 
+                 ]
+             }
+          ]
+    };    
+    $date := function($d) {
+      $toMillis($d) ~> $fromMillis("[Y0001]-[M01]-[D01]")
+    };
+    $T := function($s) { $exists($s) and $s != null and $s != '' ? (
+        { "value" : $s }
+        )
+    };
+    $Date := function($d) { $exists($d) and $d != null ? (
+        { "value" : $date($d) } 
+        )
+    };
+    $Code := function($s) { $exists($s) and $s != null and $s != '' ? (
+        { "value" : $s }
+        )
+    };
+    $Identifier := function($id,$s) { $exists($id) and $id != null and $id != '' ? (
+        { "value" : $string($id), "schemeID" : $s }
+        )
+    };
+    $Country := function($c) {
+        $Code( $$.Countries[ Code = $c ].ISOAlpha2Code )
+    };
+    $Quantity := function($q) { $exists($q) ? (
+            { "value": $q }
+        )
+    };
+    $Amount := function($a) { $exists($a) ? (
+            { "value": $roundHalfUp($a,2) }
+        )
+    };
+    $Price := function($a) { $exists($a) ? (
+            { "value": $a }
+        )
+    };
+    $Percentage := function($a) { $exists($a) ? (
+            { "value": $a }
+        )
+    };
+    
+    $MinPriceDigits := function($expected,$quantity) {(
+        ([2..8].( 
+            $rounded := $round($expected/$quantity ,$ );
+            $round($rounded*$quantity,2) = $expected ? $rounded
+        ))[0]
+    )
+    };
+	
+	$roundHalfUp := function($value, $decimals) {(
+		$factor := $power(10, $decimals);
+		$n := $value * $factor;
+		$sign := $n >= 0 ? 1 : -1;
+		/* small epsilon (binary-float) */
+		$adj := $abs($n) + 1e-12;
+		($sign * $floor($adj + 0.5)) / $factor
+		)
+	};	
+    
+    $CustomizeWithContext := function($BT,$ctx) {(
+        $exp := $lookup(Customizing,$BT);
+        $default := $Metadata.customizing.**[id = $BT].default;
+        $defaultValue  := $exists($default) and $default != null and $default != "" ? $eval($default,$ctx);
+        $ctx := $merge([$ctx, { "Default": $defaultValue }]);
+        ($exists($exp) and $exp != null and $exp != "") ? $eval($exp,$ctx) : $defaultValue
+    )
+    };
+    $Customize := function($BT) {(
+        $CustomizeWithContext($BT, $$)
+    )
+    };
+
+    $MapUnitOfMeasure := function($unit) {
+        $exists($unit) and $unit != null ? $CustomizeWithContext("G-04", { "Code": $unit })
+    };
+    
+    $hasVATCurrency := Document.DocCurrency != Company.LocalCurrency;
+    $DocAmount := function($local,$document) {
+        $hasVATCurrency ? $document : $local
+    };
+    /* payment terms */
+    $PaymentTerms := function($pt) {
+    (
+        $lines := $pt.CashDiscount.DiscountLines;
+        $hasLines := $exists($lines) and $count($lines) > 0;
+
+        $toNumber := function($v){ ($v = null or $v = "") ? 0 : $number($v) };
+
+        /* Separate discount lines (Discount > 0) */
+        $discounts := $hasLines ? $filter($lines, function($l){ $toNumber($l.Discount) > 0 }) : [];
+        $discounts := $sort($discounts, function($l){ $l.NumOfDays });
+
+        /* Determine net (fallback) days:
+            1) PaymentTermsType.NumberOfAdditionalDays (>0)
+            2) max NumOfDays of discount lines
+            3) null (no terms)
+        */
+        $netDays :=
+            ($pt.NumberOfAdditionalDays and $pt.NumberOfAdditionalDays > 0) ? $pt.NumberOfAdditionalDays :
+            ($count($discounts) > 0 ? $max($discounts.NumOfDays) : null);
+
+        /* Baseline phrase lookup (return string or null) */
+        $baselineKey := $string($pt.BaselineDate);
+        $baselineEnMap := {
+            "bld_PostingDate": "from posting date",
+            "bld_DocumentDate": "from document date",
+            "bld_TaxDate": "from tax date"
+        };
+        $baselineDeMap := {
+            "bld_PostingDate": "ab Buchungsdatum",
+            "bld_DocumentDate": "ab Belegdatum",
+            "bld_TaxDate": "ab Steuerdatum"
+        };
+        $baselineEn := $baselineEnMap[$baselineKey];
+        $baselineDe := $baselineDeMap[$baselineKey];
+        $baselineEnStr := ($baselineEn and $type($baselineEn) = "string") ? $baselineEn : "";
+        $baselineDeStr := ($baselineDe and $type($baselineDe) = "string") ? $baselineDe : "";
+
+        /* Helpers */
+        $enDays := function($n){ $n & " day" & ($n=1 ? "" : "s") };
+        $deDaysDat := function($n){ $n & " Tag" & ($n=1 ? "" : "en") };
+        $deDays := function($n){ $n & " Tag" & ($n=1 ? "" : "e") };
+
+        /* Discount fragments */
+        $enDiscountFrag := function($l){ $l.Discount & "% discount if paid within " & $enDays($l.NumOfDays) };
+        $deDiscountFrag := function($l){ $l.Discount & "% Skonto bei Zahlung innerhalb von " & $deDaysDat($l.NumOfDays) };
+
+        $enDiscountParts := $map($discounts, function($d){ $enDiscountFrag($d) });
+        $deDiscountParts := $map($discounts, function($d){ $deDiscountFrag($d) });
+
+        /* Net fragments */
+        $enNet :=
+            $netDays = null ? "" :
+            $netDays = 0 ? ("otherwise due immediately" & ($baselineEnStr != "" ? " " & $baselineEnStr : "")) :
+            ("otherwise net " & $enDays($netDays) & ($baselineEnStr != "" ? " " & $baselineEnStr : ""));
+
+        $deNet :=
+            $netDays = null ? "" :
+            $netDays = 0 ? ("sonst sofort fällig" & ($baselineDeStr != "" ? " " & $baselineDeStr : "")) :
+            ("sonst netto " & $deDays($netDays) & ($baselineDeStr != "" ? " " & $baselineDeStr : ""));
+
+        $joiner := "; ";
+
+        $en :=
+            ($count($enDiscountParts)=0 and $enNet="") ? "No explicit payment terms" :
+            ($count($enDiscountParts)>0 and $enNet!="") ? $join($append($enDiscountParts, $enNet), $joiner) :
+            ($count($enDiscountParts)>0 ? $join($enDiscountParts, $joiner) : $enNet);
+
+        $de :=
+            ($count($deDiscountParts)=0 and $deNet="") ? "Keine ausdrücklichen Zahlungsbedingungen" :
+            ($count($deDiscountParts)>0 and $deNet!="") ? $join($append($deDiscountParts, $deNet), $joiner) :
+            ($count($deDiscountParts)>0 ? $join($deDiscountParts, $joiner) : $deNet);
+
+        {
+            "en": $en,
+            "de": $de
+        }
+        )
+    };
+    
+    /* helpers: text lines */
+    
+    $TextLinesAfter := function($lineNum) {
+        (
+            $lineNumVis := Document.DocumentLines[ LineNum = $lineNum ].VisualOrder;
+            /* BOM => text lines after ingredients */
+            ($line.TreeType = "iSalesTree") ? (
+                $nextNormalLineVis := (Document.DocumentLines[VisualOrder > $lineNumVis and TreeType != "iIngredient" ][0]).VisualOrder ?? 1000000;
+                /* last ingredient */
+                $lineNumVis := (Document.DocumentLines[TreeType = "iIngredient" and VisualOrder < $nextNormalLineVis ]^(>VisualOrder))[0].VisualOrder;
+                [Document.DocumentSpecialLines[AfterLineNumber = $lineNumVis]^(OrderNumber).LineText]
+            ) :
+            (
+             [Document.DocumentSpecialLines[AfterLineNumber = $lineNumVis and LineText != ""]^(OrderNumber).LineText]
+            )
+        )
+    };
+    $TextLinesBefore := function($lineNum) {
+        (
+            $lineNumVis := Document.DocumentLines[ LineNum = $lineNum ].VisualOrder;
+            $prevLineNumVis := $$.Document.DocumentLines[VisualOrder < $lineNumVis].VisualOrder ~> $max ?? -1;
+            [Document.DocumentSpecialLines[AfterLineNumber = $prevLineNumVis ]^(OrderNumber).LineText]
+        )
+    };
+    
+    /* prepare VAT breakdown */
+    
+    /* Mapping of VAT groups to tax category codes */
+    $TaxCategoryCode := function($vatGroup) { 
+       $exists($vatGroup) and $vatGroup != null  ? $CustomizeWithContext("G-01", { "Code": $string( $vatGroup ) })
+    };
+    $TaxExemptionCode := function($vatGroup) { 
+       $exists($vatGroup) ? $CustomizeWithContext("G-03", { "Code": $string( $vatGroup ) })
+    };
+    $TaxExemptionText := function($vatGroup) { 
+       $exists($vatGroup) ? $CustomizeWithContext("G-02", { "Code": $string( $vatGroup ) })
+    };
+     /*  VAT groups: document lines */
+    $taxGroupsLines := ([(Document.DocumentLines{
+         $TaxCategoryCode(VatGroup) & "#" & $string(TaxPercentagePerRow): 
+         {
+            "VatGroup": VatGroup,
+            "Percentage": $min(TaxPercentagePerRow),
+            "Total": $hasVATCurrency ?
+                    $sum([RowTotalFC , DocumentLineAdditionalExpenses.LineTotalFC]) 
+                :   $sum([LineTotal , DocumentLineAdditionalExpenses.LineTotal]),
+            "TaxTotal": $hasVATCurrency ?
+                    $sum([NetTaxAmountFC , DocumentLineAdditionalExpenses.TaxSumFC])
+                :   $sum([NetTaxAmount , DocumentLineAdditionalExpenses.TaxSum]),
+            "DiscountBase": $hasVATCurrency ?
+                    $sum([RowTotalFC]) 
+                :   $sum([LineTotal])
+        }
+        }).*][$exists(VatGroup) and $exists(Percentage) ]).( $ ~> | $ | 
+            { 
+                "TaxCategoryCode": $TaxCategoryCode([VatGroup][0]), 
+                "TaxExemptionReasonCode": $TaxExemptionCode([VatGroup][0]), 
+                "TaxExemptionReason": $TaxExemptionText([VatGroup][0])  
+            } |  );
+    /* VAT groups: charges */    
+    $documentCharges := ([(Document.DocumentAdditionalExpenses[ LineTotal > 0]{
+         $TaxCategoryCode(VatGroup) & "#" & $string(TaxPercent): 
+         {
+            "VatGroup": VatGroup,            
+            "Percentage": $min(TaxPercent),
+            "Total": $hasVATCurrency ? $sum(LineTotalFC) :  $sum(LineTotal),
+            "TaxTotal": $hasVATCurrency ? $sum(TaxSumFC) : $sum(TaxSum)
+        }
+        }).*][$exists(VatGroup) and $exists(Percentage)]).( $ ~> | $ | 
+            { 
+                "TaxCategoryCode": $TaxCategoryCode([VatGroup][0]), 
+                "TaxExemptionReasonCode": $TaxExemptionCode([VatGroup][0]), 
+                "TaxExemptionReason": $TaxExemptionText([VatGroup][0])  
+            } |  );
+    /* VAT groups: allowances */    
+    $documentAllowances := ([(Document.DocumentAdditionalExpenses[ LineTotal < 0]{
+         $TaxCategoryCode(VatGroup) & "#" & $string(TaxPercent): 
+         {
+            "VatGroup": VatGroup,
+            "Percentage": $min(TaxPercent),
+            "Total":  $hasVATCurrency ? -$sum(LineTotalFC) : -$sum(LineTotal),
+            "TaxTotal": $hasVATCurrency ? -$sum(TaxSumFC) : -$sum(TaxSum) 
+        }
+        }).*][$exists(VatGroup) and $exists(Percentage)]).( $ ~> | $ | 
+            { 
+                "TaxCategoryCode": $TaxCategoryCode([VatGroup][0]), 
+                "TaxExemptionReasonCode": $TaxExemptionCode([VatGroup][0]), 
+                "TaxExemptionReason": $TaxExemptionText([VatGroup][0])  
+            } |  );
+    
+    /* unique VAT group keys */
+    $vatGroupKeys := ([
+        $taxGroupsLines,
+        $documentCharges,
+        $documentAllowances
+    ]).(TaxCategoryCode & "#" & $string(Percentage)) ~> $distinct;
+    
+    $salesOrder := Document.BaseDocuments[DocType='17'][0];
+    $delivery := Document.BaseDocuments[DocType='15'][0];
+    $buyerAddress := BusinessPartner.BPAddresses[0];
+    $DocumentLines := $Customize("BG-25-LINES");
+    $not($$.Action = "Metadata") ?
+    {
+        /*"Test": $TaxExemptionText("A7"),*/
+        /* BT-1 */
+        "InvoiceNumber": $Customize("BT-1") ~>  $Identifier,
+        /* BT-2 */
+        "InvoiceIssueDate": $Customize("BT-2") ~> $Date,
+        /* BT-3 */
+        "InvoiceTypeCode": $Customize("BT-3") ~> $Code,
+        /* BT-5 */
+        "InvoiceCurrencyCode": $Customize("BT-5") ~> $Code,
+        /* BT-6 */
+        "VATAccountingCurrencyCode": $Customize("BT-6") ~> $Code,
+        /* BT-7 */
+        "ValueAddedTaxPointDate": $Customize("BT-7") ~> $Date,
+        /* BT-8 */
+        "ValueAddedTaxPointDateCode":  $Customize("BT-8") ~> $Code,
+        /* BT-9 */
+        "PaymentDueDate": $Customize("BT-9") ~> $Date,
+        /* BT-10 */
+        "BuyerReference": $Customize("BT-10")  ~> $T,
+        /* BT-11 */
+        "ProjectReference": $Customize("BT-11") ~> $Identifier,
+        /* BT-12 */
+        "ContractReference":  $Customize("BT-12") ~> $Identifier,
+        /* BT-13 */
+        "PurchaseOrderReference": $Customize("BT-13") ~> $Identifier,
+        /* BT-14 */
+        "SalesOrderReference": $Customize("BT-14") ~> $Identifier,
+        /* BT-15 */
+        "ReceivingAdviceReference": $Customize("BT-15") ~> $Identifier,
+        /* BT-16 */
+        "DespatchAdviceReference": $Customize("BT-16") ~> $Identifier,
+        /* BT-17 */
+        "TenderOrLotReference": $Customize("BT-17") ~> $Identifier,
+        /* BT-18 */
+        "InvoicedObjectIdentifier": $Customize("BT-18") ~> $Identifier,
+        /* BT-19 */
+        "BuyerAccountingReference": $Customize("BT-19") ~> $Identifier,
+        /* BT-20 */
+        "PaymentTerms": $Customize("BT-20") ~> $T,
+        /* BG-1 */
+        "InvoiceNotes": [($Customize("BG-1")[`BT-22` != null and `BT-22` != ""].(
+                {
+                    "InvoiceNoteSubjectCode": `BT-21` ~> $Code,
+                    "InvoiceNote": `BT-22` ~> $T
+                })
+        )],  
+        /* BG-2 */
+        "ProcessControl": {
+            /* BT-23 */
+            "BusinessProcessType": $Customize("BT-23") ~> $Identifier,
+            /* BT-24 */
+            "SpecificationIdentifier":  $Customize("BT-24") ~> $Identifier
+        },
+        /* BG-3 */
+        "PrecedingInvoiceReferences": [
+            $Customize("BG-3").{
+                /* BT-25 */
+                "PrecedingInvoiceReference": id ~> $Identifier,
+                /* BT-26 */
+                "PrecedingInvoiceIssueDate": date ~> $Date
+            }
+        ],
+        /* BG-4 */
+        "Seller": {
+            /* BT-27 */
+            "SellerName": $Customize("BT-27") ~> $T,
+            /* BT-28 */
+            "SellerTradingName": $Customize("BT-28") ~> $T,
+            /* BT-29 */
+            "SellerIdentifier": [$Customize("BT-29").($Identifier(id , schemeID))],
+            /* BT-30 */
+            "SellerLegalRegistrationIdentifier": $Customize("BT-30") ~> $Identifier,
+            /* BT-31 */
+            "SellerVATIdentifier": $Customize("BT-31") ~> $Identifier,
+            /* BT-32  */
+            "SellerTaxRegistrationIdentifier": $Customize("BT-32") ~> $Identifier,
+            /* BT-33 */
+            "SellerAdditionalLegalInformation":$Customize("BT-33") ~> $Identifier,
+            /* BT-34 */
+            "SellerElectronicAddress": $Customize("BT-34").($Identifier(id , schemeID)),
+            /* BG-5 */
+            "SellerPostalAddress": {
+                /* BT-35 */
+                "AddressLine1": $Customize("BT-35") ~> $T,
+                /* BT-36 */
+                "AddressLine2": $Customize("BT-36") ~> $T,
+                /* BT-162 */
+                "AddressLine3": $Customize("BT-162") ~> $T,
+                /* BT-37 */
+                "City":  $Customize("BT-37") ~> $T,
+                /* BT-38 */
+                "PostCode":  $Customize("BT-38") ~> $T,
+                /* BT-39 */
+                "CountrySubdivision": $Customize("BT-39") ~> $T,
+                /* BT-40 */
+                "CountryCode":  $Customize("BT-40") ~> $Code
+            },
+            /* BG-6 */
+            "SellerContact": {
+                /* BT-41 */
+                "ContactPoint": $Customize("BT-41") ~> $T,
+                /* BT-42 */
+                "ContactTelephoneNumber": $Customize("BT-42") ~> $T,
+                /* BT-43 */
+                "ContactEMailAddress": $Customize("BT-43") ~> $T
+            }
+        },
+        /* BG-7 */
+        "Buyer": {
+            /* BT-44 */
+            "BuyerName": $Customize("BT-44") ~> $T,
+            /* BT-45 */
+            "BuyerTradingName": $Customize("BT-45") ~> $T,
+            /* BT-46 */
+            "BuyerIdentifier": [$Customize("BT-46").($Identifier(id , schemeID))][0],
+            /* BT-47 */
+            "BuyerLegalRegistrationIdentifier": $Customize("BT-47") ~> $T,
+            /* BT-48 */
+            "BuyerVATIdentifier": $Customize("BT-48") ~> $Identifier,
+            /* BT-49 */
+            "BuyerElectronicAddress": $Customize("BT-49").($Identifier(id , schemeID)),
+            /* BG-8 */
+            "BuyerPostalAddress": {
+                /* BT-50 */
+                "AddressLine1": $Customize("BT-50") ~> $T,
+                /* BT-51 */
+                "AddressLine2": $Customize("BT-51") ~> $T,
+                /* BT-163 */
+                "AddressLine3": $Customize("BT-163") ~> $T,
+                /* BT-52 */
+                "City": $Customize("BT-52") ~> $T,
+                /* BT-53 */
+                "PostCode": $Customize("BT-53") ~> $T,
+                /* BT-54 */
+                "CountrySubdivision": $Customize("BT-54") ~> $T,
+                /* BT-55 */
+                "CountryCode": $Customize("BT-55") ~> $Country
+            },
+            /* BG-9 */
+            "BuyerContact": {
+                /* BT-56 */
+                "ContactPoint": $Customize("BT-56") ~> $T,
+                /* BT-57 */
+                "ContactTelephoneNumber": $Customize("BT-57") ~> $T,
+                /* BT-58 */
+                "ContactEMailAddress": $Customize("BT-58") ~> $T
+            }
+        },
+        /* BG-10 */
+        "Payee": {
+          /* BT-59 */
+          "PayeeName": $Customize("BT-59") ~> $T,
+          /* BT-60 */
+          "PayeeIdentifier": $Customize("BT-60") ~> $Identifier,
+          /* BT-61 */
+          "PayeeLegalRegistrationIdentifier": $Customize("BT-61") ~> $T
+        },
+        /* BG-11 */
+        "SellerTaxRepresentative": {
+          /* BT-62 */
+          "SellerTaxRepresentativeName": $Customize("BT-62") ~> $T,
+          /* BT-63 */
+          "SellerTaxRepresentativeVATIdentifier": $Customize("BT-63") ~> $Identifier,
+          /* BG-12 */
+          "SellerTaxRepresentativePostalAddress": { 
+                /* BT-54 */
+                "AddressLine1": $Customize("BT-64") ~> $T,
+                /* BT-55 */
+                "AddressLine2": $Customize("BT-65") ~> $T,
+                /* BT-164 */
+                "AddressLine3": $Customize("BT-164") ~> $T,
+                /* BT-66 */
+                "City": $Customize("BT-66") ~> $T,
+                /* BT-67 */
+                "PostCode": $Customize("BT-67") ~> $T,
+                /* BT-68 */
+                "CountrySubdivision": $Customize("BT-68") ~> $T,
+                /* BT-69 */
+                "CountryCode": $Customize("BT-69") ~> $T
+          } 
+        },
+        /* BG-13 */
+        "DeliveryInformation": {
+            /* BT-70 */
+            "DeliverToPartyName": $Customize("BT-70") ~> $T,
+            /* BT-71 */
+            "DeliverToLocationIdentifier": $Customize("BT-71").($Identifier(id , schemeID)),
+            /* BT-72 */
+            "ActualDeliveryDate": $Customize("BT-72") ~> $Date,
+            /* BG-14 */
+            "InvoicingPeriod": {
+                /* BT-73 */
+                "InvoicingPeriodStartDate": $Customize("BT-73") ~> $Date,
+                /* BT-74 */
+                "InvoicingPeriodEndDate": $Customize("BT-74") ~> $Date
+            },
+            /* BG-15 */
+            "DeliverToAddress": {
+                /* BT-75 */
+                "AddressLine1": $Customize("BT-75") ~> $T,
+                /* BT-76 */
+                "AddressLine2": $Customize("BT-76") ~> $T,
+                /* BT-165 */
+                "AddressLine3": $Customize("BT-165") ~> $T,
+                /* BT-77 */
+                "City": $Customize("BT-77") ~> $T,
+                /* BT-78 */
+                "PostCode": $Customize("BT-78") ~> $T,
+                /* BT-79 */
+                "CountrySubdivision": $Customize("BT-79") ~> $T,
+                /* BT-80 */
+                "CountryCode": $Customize("BT-80") ~> $Country
+            }
+        },
+        /* BG-16 */
+        "PaymentInstructions": (
+            $paymentMeansType := $Customize("BT-81-TYPE");
+            $isCreditTransfer := $paymentMeansType = "CRE";
+            $isDirectDebit := $paymentMeansType = "DEB";
+         ($isCreditTransfer or $isDirectDebit) ?
+         {
+          /* BT-81 */
+          "PaymentMeansTypeCode": ($isCreditTransfer ? $Customize("BT-81-CRE") : $Customize("BT-81-DEB")) ~> $Code,
+          /* BT-82 */
+          "PaymentMeansText": $Customize("BT-82") ~> $T,
+          /* BT-83 */
+          "RemittanceInformation": $Customize("BT-83") ~> $T,
+          /* BG-17 */
+          "CreditTransfer": $isCreditTransfer ? $Customize("BG-17-HB").[
+              (
+                $ctx := $merge([$$,{ "HouseBankAccount": $ }]);
+                {
+                  /* BT-84 */
+                  "PaymentAccountIdentifier": $CustomizeWithContext("BT-84", $ctx) ~> $T,
+                  /* BT-85 */
+                  "PaymentAccountName": $CustomizeWithContext("BT-85", $ctx) ~> $T,
+                  /* BT-86 */
+                  "PaymentServiceProviderIdentifier": $CustomizeWithContext("BT-86", $ctx) ~> $T
+                }
+              )
+          ],
+          /* BG-18 */
+          "PaymentCardInformation ":false  ?  { 
+              /* BT-87 */
+              "PaymentCardPrimaryAccountNumber": $Customize("BT-87") ~> $T,
+              /* BT-88 */
+              "PaymentCardHolderName": $Customize("BT-88") ~> $T
+          }, 
+          /* BG-19 */
+          "DirectDebit": $isDirectDebit ? (
+            {
+              /* BT-89 */
+              "MandateReferenceIdentifier":  $Customize("BT-89") ~> $T,
+              /* BT-90 */
+              "BankAssignedCreditorIdentifier": $Customize("BT-90") ~> $T,
+              /* BT-91 */
+              "DebitedAccountIdentifier": $Customize("BT-91") ~> $T
+            }
+            )
+        }),
+        /* BG-20 */
+        "DocumentLevelAllowances": [ 
+            (Document.TotalDiscount > 0) ? $taxGroupsLines.{
+                /* BT-92 */
+                "DocumentLevelAllowanceAmount": $Amount(DiscountBase *  $$.Document.DiscountPercent / 100),
+                /* BT-93 
+                "DocumentLevelAllowanceBaseAmount": ...*/
+                /* BT-94 
+                "DocumentLevelAllowancePercentage": ...*/
+                /* BT-95 */
+                "DocumentLevelAllowanceVATCategoryCode":  $Code(TaxCategoryCode),
+                /* BT-96 */
+                "DocumentLevelAllowanceVATRate": $Percentage(Percentage),
+                /* BT-97 */
+                "DocumentLevelAllowanceReason": $Customize("BT-97-T") ~> $T,
+                /* BT-98 */
+                "DocumentLevelAllowanceReasonCode": $Customize("BT-98-T") ~>$Code
+            }[],
+            Document.DocumentAdditionalExpenses[ LineTotal < 0].(
+            $ctx := $merge([$$, { "DocumentAdditionalExpense": $ }]);
+            {
+                 /* BT-92 */
+                "DocumentLevelAllowanceAmount": $Amount( $DocAmount(-LineTotal,-LineTotalFC )),
+                /* BT-93 
+                "DocumentLevelAllowanceBaseAmount": ...*/
+                /* BT-94 
+                "DocumentLevelAllowancePercentage": ...*/
+                /* BT-95 */
+                "DocumentLevelAllowanceVATCategoryCode":  $Code( $TaxCategoryCode( VatGroup ) ),
+                /* BT-96 */
+                "DocumentLevelAllowanceVATRate": $Percentage(TaxPercent),
+                /* BT-97 */
+                "DocumentLevelAllowanceReason":  $CustomizeWithContext("BT-97", $ctx) ~> $T,
+                /* BT-98 */
+                "DocumentLevelAllowanceReasonCode": $CustomizeWithContext("BT-98", $ctx) ~> $Code
+            })
+        ],
+        /* BG-21 */
+        "DocumentLevelCharges": [ 
+            (Document.TotalDiscount < 0) ? $taxGroupsLines.{
+                /* BT-99 */
+                "DocumentLevelChargeAmount": $Amount(-DiscountBase *  $$.Document.DiscountPercent / 100),
+                /* BT-100 
+                "DocumentLevelChargeBaseAmount": ... */
+                /* BT-101 
+                "DocumentLevelChargePercentage": ... */
+                /* BT-102 */
+                "DocumentLevelChargeVATCategoryCode":  $Code(TaxCategoryCode),
+                /* BT-103 */
+                "DocumentLevelChargeVATRate": $Percentage(Percentage),
+                /* BT-104 */
+                "DocumentLevelChargeReason": $Customize("BT-104-T") ~> $T,
+                /* BT-105 */
+                "DocumentLevelChargeReasonCode": $Customize("BT-105-T") ~> $Code
+            }[],
+            Document.DocumentAdditionalExpenses[ LineTotal > 0].(
+            $ctx := $merge([$$, { "DocumentAdditionalExpense": $ }]);
+            {
+                /* BT-99 */
+                "DocumentLevelChargeAmount": $Amount( $DocAmount(LineTotal, LineTotalFC )),
+                /* BT-100 
+                "DocumentLevelChargeBaseAmount": ... */
+                /* BT-101 
+                "DocumentLevelChargePercentage": ... */
+                /* BT-102 */
+                "DocumentLevelChargeVATCategoryCode": $Code( $TaxCategoryCode( VatGroup ) ),
+                /* BT-103 */
+                "DocumentLevelChargeVATRate": $Percentage( TaxPercent ),
+                /* BT-104 */
+                "DocumentLevelChargeReason": $CustomizeWithContext("BT-104", $ctx) ~> $T,
+                /* BT-105 */
+                "DocumentLevelChargeReasonCode": $CustomizeWithContext("BT-105", $ctx) ~> $Code
+            })
+        ],
+        /* BG-22 */
+        "DocumentTotals": {
+            
+            /* BT-106 */
+            "SumOfInvoiceLineNetAmount": $hasVATCurrency ? $Amount($sum([Document.DocumentLines.RowTotalFC ,Document.DocumentLines.DocumentLineAdditionalExpenses.LineTotalFC]))
+                                                         : $Amount($sum([Document.DocumentLines.LineTotal  ,Document.DocumentLines.DocumentLineAdditionalExpenses.LineTotal])),
+            /* BT-107 */
+            "SumOfAllowancesOnDocumentLevel": [(Document.TotalDiscount > 0) ? Document.TotalDiscount, $documentAllowances.Total ] ~> $sum ~> $Amount ,
+            /* BT-108 */
+            "SumOfChargesOnDocumentLevel": [(Document.TotalDiscount < 0) ? -Document.TotalDiscount, $documentCharges.Total ] ~> $sum ~> $Amount ,
+            /* BT-109 */
+            "InvoiceTotalAmountWithoutVAT":  $DocAmount(Document.DocTotal, Document.DocTotalFc) -  $DocAmount(Document.VatSum, Document.VatSumFc) ~> $Amount,
+            /* BT-110 */ 
+            "InvoiceTotalVATAmount": $DocAmount( Document.VatSum ,Document.VatSumFc) ~> $Amount,
+            /* BT-111 */ 
+            "InvoiceTotalVATAmountInAccountingCurrency": $hasVATCurrency ? $Amount(Document.VatSum),
+            /* BT-112 */ 
+            "InvoiceTotalAmountWithVAT": $DocAmount(Document.DocTotal, Document.DocTotalFc) ~> $Amount,
+            /* BT-113 */
+            "PaidAmount": $DocAmount(Document.DownPaymentAmount, Document.DownPaymentAmountFC) ~> $Amount,
+            /* BT-114 */
+            "RoundingAmount": $DocAmount(Document.RoundingDiffAmount, Document.RoundingDiffAmountFC) ~> $Amount,
+            /* BT-115 */
+            "AmountDueForPayment": $DocAmount(Document.DocTotal, Document.DocTotalFc) ~> $Amount
+            
+        },
+        /* BG-23 */
+        "VATBreakdown": $vatGroupKeys.(
+            $key:= $;
+            $lineGroup := $taxGroupsLines[ TaxCategoryCode & "#" & $string(Percentage) = $key ];
+            $charges :=  $documentCharges[ TaxCategoryCode & "#" & $string(Percentage) = $key ];
+            $allowances :=  $documentAllowances[ TaxCategoryCode & "#" & $string(Percentage) = $key ];
+            $group := [ $lineGroup, $charges, $allowances ][0];
+        {
+            /* BT-116 */
+            "VATCategoryTaxableAmount": $Amount( $sum([$charges.Total, -$allowances.Total, $lineGroup.Total -  $roundHalfUp($lineGroup.Total*$$.Document.DiscountPercent/100, 2)]) ),
+            /* BT-117 */
+            "VATCategoryTaxAmount": $Amount( $sum([ $lineGroup.TaxTotal , $charges.TaxTotal, -$allowances.TaxTotal ])),
+            /* BT-118 */
+            "VATCategoryCode": $Code($group.TaxCategoryCode),
+            /* BT-119 */
+            "VATCategoryRate": $Percentage($group.Percentage),
+            /* BT-120 */
+            "VATExemptionReasonText": $group.TaxExemptionReason ~> $T,
+            /* BT-121 */
+            "VATExemptionReasonCode": $group.TaxExemptionReasonCode ~> $Code
+        })[],
+        /* BG-24 */
+        "AdditionalSupportingDocuments": [
+            /*{*/
+                /* BT-122
+                "SupportingDocumentReference": ... */
+                /* BT-123
+                "SupportingDocumentDescription": ... */
+                /* BT-124
+                "ExternalDocumentLocation": ... */
+                /* BT-125
+                "AttachedDocument": ... */
+            /*}*/
+        ],
+        /* BG-25 */
+        "InvoiceLines": [$DocumentLines.(
+        $ctx := $merge([$$, { "Line": $, "$TextLinesAfter": $TextLinesAfter , "$TextLinesBefore": $TextLinesBefore }]);
+        $orderLine := BaseDocuments[DocType = "17"];
+        {
+            /* BT-126 */
+            "InvoiceLineIdentifier": $CustomizeWithContext("BT-126", $ctx) ~> $Identifier,
+            /* BT-127 */
+            "InvoiceLineNote": $CustomizeWithContext("BT-127", $ctx) ~> $T,
+            /* BT-128 */
+            "InvoiceLineObjectIdentifier": $CustomizeWithContext("BT-128", $ctx).($Identifier(id , schemeID)),
+            /* BT-129 */
+            "InvoicedQuantity": $CustomizeWithContext("BT-129" ,$ctx) ~> $Quantity,
+            /* BT-130 */
+            "InvoicedQuantityUnitOfMeasureCode": $CustomizeWithContext("BT-130" ,$ctx) ~> $Code,
+            /* BT-131 */
+            "InvoicedLineNetAmount": $hasVATCurrency ? $Amount($sum([ RowTotalFC, DocumentLineAdditionalExpenses.LineTotalFc] ))
+                                                     : $Amount($sum([ LineTotal, DocumentLineAdditionalExpenses.LineTotal] )),
+            /* BT-132 */
+            "ReferencedPurchaseOrderLineReference":  $CustomizeWithContext("BT-132", $ctx) ~> $Identifier,
+            /* BT-133 */
+            "InvoiceLineBuyerAccountingReference": $CustomizeWithContext("BT-133", $ctx) ~> $T,
+            /* BG-26 */
+            "InvoiceLinePeriod": {
+              /* BT-134 */   
+              "InvoiceLinePeriodStartDate": $CustomizeWithContext("BT-134", $ctx) ~> $Date,
+              /* BT-135 */   
+              "InvoiceLinePeriodEndDate":  $CustomizeWithContext("BT-135", $ctx) ~> $Date
+            },
+            /* BG-27 */
+            "InvoiceLineAllowances": DocumentLineAdditionalExpenses[ LineTotal < 0 ].(
+            $ctx := $merge([$$, { "DocumentLineAdditionalExpense": $ }]);
+             {
+                    /* BT-136 */
+                    "InvoiceLineAllowanceAmount": $Amount(-$DocAmount(LineTotal, LineTotalFc)),
+                    /* BT-137
+                    "InvoiceLineAllowanceBaseAmount": ... */
+                    /* BT-138
+                    "InvoiceLineAllowancePercentage": ... */
+                    /* BT-139 */
+                    "InvoiceLineAllowanceReason": $CustomizeWithContext("BT-139", $ctx) ~> $T,
+                    /* BT-140 */
+                    "InvoiceLineAllowanceReasonCode": $CustomizeWithContext("BT-140", $ctx) ~> $Code
+            })[],
+            /* BG-28 */
+            "InvoiceLineCharges": DocumentLineAdditionalExpenses[ LineTotal > 0 ].(
+            $ctx := $merge([$$, { "DocumentLineAdditionalExpense": $ }]);
+            {
+                    /* BT-141 */
+                    "InvoiceLineChargeAmount": $Amount($DocAmount(LineTotal, LineTotalFc)),
+                    /* BT-142
+                    "InvoiceLineChargeBaseAmount": ... */
+                    /* BT-143
+                    "InvoiceLineChargePercentage": ... */
+                    /* BT-144 */
+                    "InvoiceLineChargeReason": $CustomizeWithContext("BT-144", $ctx) ~> $T,
+                    /* BT-145 */
+                    "InvoiceLineChargeReasonCode": $CustomizeWithContext("BT-145", $ctx) ~> $Code
+            })[],
+            /* BG-29 */
+            "PriceDetails": {
+                /* BT-146 */
+                "ItemNetPrice": $hasVATCurrency ? $Price($MinPriceDigits(RowTotalFC,Quantity = 0 ? 1 : Quantity)) : $Price($MinPriceDigits(LineTotal,Quantity = 0 ? 1 : Quantity)),
+                /* BT-147 */
+                "ItemPriceDiscount": $hasVATCurrency ? $Price($round( UnitPrice * $$.Document.DocRate - $MinPriceDigits(RowTotalFC,Quantity = 0 ? 1 : Quantity), 6)) : $Price($round( UnitPrice - $MinPriceDigits(LineTotal,Quantity = 0 ? 1 : Quantity), 6)),
+                /* BT-148 */
+                "ItemGrossPrice": $hasVATCurrency ? $Price(UnitPrice * $$.Document.DocRate) : $Price(UnitPrice),
+                /* BT-149 */
+                "ItemPriceBaseQuantity": UnitsOfMeasurment != 0 ? $Quantity(UnitsOfMeasurment)
+                /* BT-150 
+                "ItemPriceBaseQuantityUnitOfMeasureCode": ... */
+            },
+            /* BG-30 */
+            "LineVATInformation": {
+                /* BT-151 */
+                "InvoicedItemVATCategoryCode": $Code($TaxCategoryCode(VatGroup)),
+                /* BT-152 */
+                "InvoicedItemVATRate": $Percentage(TaxPercentagePerRow)
+            },
+            /* BG-31 */
+            "ItemInformation": {
+                /* BT-153 */
+                "ItemName": $CustomizeWithContext("BT-153", $ctx) ~> $T,
+                /* BT-154 */
+                "ItemDescription": $CustomizeWithContext("BT-154", $ctx) ~> $T,
+                /* BT-155 */
+                "ItemSellersIdentifier": $CustomizeWithContext("BT-155", $ctx) ~> $Identifier,
+                /* BT-156 */
+                "ItemBuyersIdentifier": $CustomizeWithContext("BT-156", $ctx) ~> $Identifier,
+                /* BT-157 */
+                "ItemStandardIdentifier": $CustomizeWithContext("BT-157", $ctx).($Identifier(id , schemeID)),
+                /* BT-158 */
+                "ItemClassificationIdentifier": [$CustomizeWithContext("BT-158", $ctx).($Identifier(id , schemeID))],
+                /* BT-159 */
+                "ItemCountryOfOrigin": $CustomizeWithContext("BT-159", $ctx) ~> $Country,
+                /* BG-32 */
+                "ItemAttributes": [ $CustomizeWithContext("BG-32", $ctx).(
+                    {
+                        /* BT-160 */
+                        "ItemAttributeName": name ~> $T,
+                        /* BT-161 */
+                        "ItemAttributeValue": value ~> $T
+                    }
+                    )
+                ]
+            }
+        })]
+        
+    } : {
+     "metadata": $Metadata
+    }
+)
